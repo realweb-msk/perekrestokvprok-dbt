@@ -1,0 +1,56 @@
+version: 2
+
+sources:
+  
+  - name: sheets_data
+    database: perekrestokvprok-bq
+    tables:
+      - name: TIKTOK_table
+        description: таблица с данными из РК Тиктока (c 01.10.2021)
+      
+      - name: tiktok_sheets_campaign_cost_purchases 
+        description: таблица с данными из РК Тиктока (на текущий месяц из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
+    
+      - name: FBNEW_data
+        description: таблица с данными из РК Фейсбука (c 01.05.2021)
+
+      - name: fb_spreadsheets_data 
+        description: таблица с данными из РК Фейсбука (на текущий месяц из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
+
+      - name: twitter_sheets
+        description: таблица с данными из РК Твиттера (на текущий месяц из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
+  
+      - name: twitter_data
+        description: таблица с данными из РК Твиттера (c 01.10.2021)
+
+      - name: rate_data_for_inside
+        description: таблица со ставками (https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
+
+      - name: mistake_cmp
+        description: таблица с ошибочными названиями кампаний (https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
+
+      
+
+  - name: MetaCustom
+    database: perekrestokvprok-bq
+    tables:
+      - name: vk_campaign_stat_1900013586_1605495720
+        description: Meta VK (Autofeed VK Ads 1900013586_1605495720)
+
+      - name: yandex_direct_ad_keyword_stat_x5perek_direct
+        description: Meta Yandex Direct (Autofeed Yandex Direct x5perek-direct Статистика по фразам и объявлениям (CUSTOM_REPORT))
+
+      - name: mytarget_banner_stat_d0927adb05_agency_client
+        description: Meta MT (Autofeed MyTarget d0927adb05@agency_client Статистика по баннерам)
+      
+      - name: apple_search_ads_ASA_cost
+        description: Meta ASA (Perek_vprok_asa_cost_yaf)
+
+      - name: google_dbm_google_dv360_cost_5807131
+        description: Meta DV360 (Autofeed DoubleClick Bid Manager (Display&Video360) 5807131 DV360_Base_Report_with_Cost)
+
+  - name: agg_data
+    database: perekrestokvprok-bq
+    tables:
+      - name: AF_client_data
+        description: таблица с данными из аппсфлайера, которая работает на scheduled query. Нет разрешений, чтобы выдать доступ для нашего сервисного акка на доступ к сырым данным (radiant-entry-230109.appsflayer_events.*)
