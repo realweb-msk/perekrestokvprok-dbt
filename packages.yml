@@ -1,11 +1,15 @@
 packages:
+  
   - package: dbt-labs/dbt_utils
     version: 0.7.4
+  
   - package: dbt-labs/codegen
     version: 0.4.1
     # чтобы сгенерить схему, запусти: dbt run-operation generate_model_yaml --args "{model_name: your_model_name}"
-  - package: avohq/avo_audit
-    version: 0.2.0
+    
+    #- package: avohq/avo_audit
+    #  version: 0.2.0
+  
   - package: calogica/dbt_expectations
     version: [">=0.4.0", "<0.5.0"]
      # <see https://github.com/calogica/dbt-expectations/releases/latest> for the latest version tag
