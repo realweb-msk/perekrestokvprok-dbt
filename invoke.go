@@ -1,3 +1,5 @@
+// Используется для Cloud Run.
+
 package main
 
 import (
@@ -11,14 +13,13 @@ import (
 func handler(w http.ResponseWriter, r *http.Request) {
         log.Print("helloworld: received a request")
 
-        cmd := exec.CommandContext(r.Context(), "/bin/sh", "script.sh")
-        cmd.Stderr = os.Stderr
-        out, err := cmd.Output()
-        if err != nil {
-                w.WriteHeader(500)
-        }
-        log.Print(string(out))
-        w.Write(out)
+        cmd := exec.Command("/bin/sh", "script.sh")
+        cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
 }
 
 func main() {
