@@ -3,7 +3,7 @@ WORKDIR /app
 COPY invoke.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o server
 
-FROM fishtownanalytics/dbt:0.19.1
+FROM fishtownanalytics/dbt:1.0.1
 USER root
 WORKDIR /perekrestokvprok-dbt
 COPY --from=builder /app/server ./
