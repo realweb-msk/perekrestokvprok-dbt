@@ -6,7 +6,7 @@ sources:
     database: perekrestokvprok-bq
     tables:
       - name: TIKTOK_table
-        description: таблица с данными из РК Тиктока (c 01.10.2021)
+        description: таблица с данными из РК Тиктока (c 01.10.2021). Обновляется 1 раз в месяц.
       
       - name: tiktok_sheets_campaign_cost_purchases 
         description: таблица с данными из РК Тиктока (на текущий месяц из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
@@ -29,28 +29,89 @@ sources:
       - name: mistake_cmp
         description: таблица с ошибочными названиями кампаний (https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1069669087)
 
-      
+      - name: promo_dict_sheets
+        description: словарь из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1136333702
+
+      - name: promo_dict_data
+        description: по расписанию из promo_dict_sheets
+
+      - name: rate_info
+        description: словарь из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=896311385 
+
+      - name: budget_and_plan
+        description: словарь из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1919397242
+
+      - name: promo_sheets
+        description: словарь из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1301207630 с июля не обновляется.
+
+      - name: google_ads_costs_and_installs
+        description: косты,установки,клики и показы из Гугл Адс (с адсетом) - https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=2062992783
+
+      - name: google_ads_costs_27_30_dec_2021
+        description: разовая выгрузка из др. кабинета.
 
   - name: MetaCustom
     database: perekrestokvprok-bq
     tables:
       - name: vk_campaign_stat_1900013586_1605495720
-        description: Meta VK (Autofeed VK Ads 1900013586_1605495720)
+        description: Meta VK (Autofeed VK Ads 1900013586_1605495720 - https://meta.realweb.ru/card?e=2770&o=8c107494-12ab-4d13-969a-14b552e357a0&a=58)
 
       - name: yandex_direct_ad_keyword_stat_x5perek_direct
         description: Meta Yandex Direct (Autofeed Yandex Direct x5perek-direct Статистика по фразам и объявлениям (CUSTOM_REPORT))
 
       - name: mytarget_banner_stat_d0927adb05_agency_client
-        description: Meta MT (Autofeed MyTarget d0927adb05@agency_client Статистика по баннерам)
+        description: Meta MT (Autofeed MyTarget d0927adb05@agency_client Статистика по баннерам - https://meta.realweb.ru/card?e=2770&o=797ab813-c351-4e39-9cef-254144dfae39&a=58)
       
       - name: apple_search_ads_ASA_cost
-        description: Meta ASA (Perek_vprok_asa_cost_yaf)
+        description: Meta ASA (Perek_vprok_asa_cost_yaf - https://meta.realweb.ru/card?e=2770&o=a06700c1-116c-4b69-ac5d-f9ee9314e3d4&a=58)
 
       - name: google_dbm_google_dv360_cost_5807131
-        description: Meta DV360 (Autofeed DoubleClick Bid Manager (Display&Video360) 5807131 DV360_Base_Report_with_Cost)
+        description: Meta DV360 (Autofeed DoubleClick Bid Manager (Display&Video360) 5807131 DV360_Base_Report_with_Cost - https://meta.realweb.ru/card?e=2770&o=f8b65eb8-497a-4d7d-94c0-fbd8b9c3cb35&a=58)
+
+      - name: google_adwords_campaign_stat_4284985623
+        description: Meta google ads, исп только в rw_cost_view (Autofeed Google Ads 4284985623 Статистика по кампаниям (AD_PERFORMANCE_REPORT) - https://meta.realweb.ru/card?e=2770&o=876ff8b5-48e5-48f2-86f2-edfa030dd583&a=58) 
+
+      - name: google_adwords_campaign_label_4284985623
+        description: Мета из Гугл Адс,исп только в rw_cost (Autofeed Google Ads 4284985623 Данные по кампаниям (+label) - https://meta.realweb.ru/card?e=2770&o=a2cd0479-a0db-4b0c-bfb4-d9589b58e05f&a=58)
 
   - name: agg_data
     database: perekrestokvprok-bq
     tables:
       - name: AF_client_data
         description: таблица с данными из аппсфлайера, которая работает на scheduled query. Нет разрешений, чтобы выдать доступ для нашего сервисного акка на доступ к сырым данным (radiant-entry-230109.appsflayer_events.*)
+
+      - name: promocod_client_data
+        description: данные из клиентской CRM,  scheduled query. Нет разрешений, чтобы выдать доступ для нашего сервисного акка на доступ к сырым данным (radiant-entry-230109. BO_data.orders_bought_*)
+
+      - name: google_ads_costs_and_installs_sum
+        description: сумма данных из google_ads_costs_and_installs_sum с 1 ноя 2021
+
+  - name: bq:DCM_impression_reach
+    database: perekrestokvprok-bq
+    tables:
+      - name: google_dbm_existed_dbm_report_293044
+        description: Meta DCM (Autofeed DoubleClick Bid Manager (Display&Video360) 293044 existed dbm report - https://meta.realweb.ru/card?e=2770&o=a37c236a-0e06-4f83-98a9-cf8cc8e52717&a=58) - показы, охват для медийки
+
+  - name: DCM
+    database: perekrestokvprok-bq
+    tables: 
+      - name: google_dbm_existed_dbm_report_293044
+        description: СТАРЫЙ Meta DCM (Autofeed DoubleClick Bid Manager (Display&Video360) 293044 existed dbm report - https://meta.realweb.ru/card?e=2770&o=34f70c3b-1e88-4cb7-b595-b57c9f0a0dd4&a=58) - клики,показы,Revenue для медийки. 
+
+      - name: Placemant_dict
+        description: словарь из https://docs.google.com/spreadsheets/d/1ljGdr9zarLSP4dy4lw00eqkWnmYueDeWSAPu03JGcgI/edit#gid=0
+
+      - name: google_dcm_activitiIO
+        description: Мета DCM (CM report perekvprok (media ads) - https://meta.realweb.ru/card?e=2770&o=9b5362fa-5990-4268-95b1-260b1627f145&a=58) - конверсии 
+  
+  - name: AF_data
+    database: perekrestokvprok-bq
+    tables:
+      - name: af_atr_data_for_media_ads_TABLE
+        description: LTV-события из апсфлайера
+  
+  - name: test2
+    database: perekrestokvprok-bq
+    tables:
+      - name: google_dbm_existed_dbm_report_123
+        description: Meta DCM (Autofeed DoubleClick Bid Manager (Display&Video360) 123 existed dbm report - https://meta.realweb.ru/card?e=2770&o=5413ffcd-8dc8-467a-a533-f0afc55789d8&a=58) - клики,показы,Revenue для медийки c дек 2021
