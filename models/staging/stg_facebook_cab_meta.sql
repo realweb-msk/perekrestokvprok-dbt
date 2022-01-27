@@ -3,6 +3,7 @@
 {{
   config(
     materialized='incremental',
+    unique_key='unique_key',
     partition_by={
       "field": "date",
       "data_type": "date",
@@ -32,6 +33,12 @@ WITH source AS (
 
 unnests AS (
   SELECT 
+    ARRAY_TO_STRING([
+      CAST(date_start AS STRING),
+      campaign_name,
+      adset_name,
+      ad_name
+      ],'') AS unique_key,
     date_start AS date,
     campaign_name,
     adset_name,
@@ -76,6 +83,7 @@ unnests AS (
 )
 
 SELECT
+    unique_key,
     date,
     campaign_name,
     adset_name,
@@ -96,6 +104,12 @@ FROM unnests
 -- первый раз --
 UNION ALL
 SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date_start AS STRING),
+      campaign_name,
+      adset_name,
+      ad_name
+      ],'') AS unique_key,
     date,
     campaign_name,
     adset_name,
@@ -116,26 +130,24 @@ WHERE date < (
 )
 
 -- на будущее --
-UNION ALL
-SELECT
-    date,
-    campaign_name,
-    adset_name,
-    ad_name,
-    impressions,
-    clicks,
-    installs,
-    spend,
-    purchase,
-    revenue,
-    first_purchase,
-    first_purchase_revenue,
-    add_to_cart
-FROM {{ this }}
-WHERE date < (
-  SELECT MIN(date)
-  FROM unnests
-)
+-- UNION ALL
+-- SELECT
+--     unique_key,
+--     date,
+--     campaign_name,
+--     adset_name,
+--     ad_name,
+--     impressions,
+--     clicks,
+--     installs,
+--     spend,
+--     purchase,
+--     revenue,
+--     first_purchase,
+--     first_purchase_revenue,
+--     add_to_cart
+-- FROM {{ this }}
+-- )
 
 {% endif %}
 
