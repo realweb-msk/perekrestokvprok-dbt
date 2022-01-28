@@ -18,7 +18,7 @@
 WITH source AS (
   SELECT
       date_start,
-      campaign_name,
+      lower(campaign_name) as campaign_name,
       adset_name,
       ad_name,
       impressions,
@@ -79,7 +79,7 @@ unnests AS (
         where action_type = 'app_custom_event.fb_mobile_add_to_cart'
     )) AS add_to_cart,
   FROM source
-  GROUP BY 1,2,3,4
+  GROUP BY 1,2,3,4,5
 )
 
 SELECT
@@ -105,13 +105,13 @@ FROM unnests
 UNION ALL
 SELECT DISTINCT
     ARRAY_TO_STRING([
-      CAST(date_start AS STRING),
-      campaign_name,
+      CAST(date AS STRING),
+      lower(campaign_name),
       adset_name,
       ad_name
       ],'') AS unique_key,
     date,
-    campaign_name,
+    lower(campaign_name) campaign_name,
     adset_name,
     ad_name,
     show AS impressions,

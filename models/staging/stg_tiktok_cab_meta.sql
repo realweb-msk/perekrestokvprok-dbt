@@ -18,7 +18,7 @@
 WITH source AS (
     SELECT
         stat_time_day,
-        campaign_name,
+        LOWER(campaign_name) AS campaign_name,
         adgroup_name,
         impressions,
         reach,
@@ -68,11 +68,11 @@ UNION ALL
 SELECT DISTINCT
     ARRAY_TO_STRING([
       CAST(date AS STRING),
-      campaign_name,
+      LOWER(campaign_name),
       ad_group_name
       ],'') AS unique_key,
     date,
-    campaign_name,
+    LOWER(campaign_name) AS campaign_name,
     ad_group_name AS adset_name,
     0 AS impressions,
     0 AS reach,

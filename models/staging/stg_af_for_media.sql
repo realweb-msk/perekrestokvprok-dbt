@@ -1,7 +1,7 @@
 SELECT
     atr_date AS date,
     is_retargeting,
-    Campaign AS campaign_name,
+    LOWER(Campaign) AS campaign_name,
     MediaSource AS media_source,
     platform,
     EventName AS event_name,
