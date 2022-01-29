@@ -9,7 +9,7 @@
       "data_type": "date",
       "granularity": "day"
     },
-    cluster_by = ["campaign_name"]
+    cluster_by = ["campaign_type"]
   )
 }}
 
@@ -42,6 +42,7 @@ SELECT
     unique_key,
     date,
     campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'_old_'),'retargeting','UA') AS campaign_type,
     impressions,
     spend
 FROM final
@@ -57,6 +58,7 @@ SELECT DISTINCT
       ],'') AS unique_key,
     date,
     LOWER(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'_old_'),'retargeting','UA') AS campaign_type,
     impressions,
     spend
 FROM {{ source('sheets_data', 'twitter_data') }}

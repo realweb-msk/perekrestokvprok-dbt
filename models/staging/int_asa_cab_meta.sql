@@ -12,6 +12,7 @@ final AS (
     SELECT
         Date AS date,
         LOWER(metadata_campaignName) AS campaign_name,
+        IF(REGEXP_CONTAINS(metadata_campaignName, r'\(R\)'),'retargeting','UA') AS campaign_type,
         '-' adset_name,
         SUM(impressions) AS impressions,
         SUM(taps) AS clicks,
@@ -23,6 +24,7 @@ final AS (
 SELECT
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     impressions,
     clicks,

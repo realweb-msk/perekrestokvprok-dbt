@@ -9,7 +9,7 @@
       "data_type": "date",
       "granularity": "day"
     },
-    cluster_by = ["campaign_name"]
+    cluster_by = ["campaign_type"]
   )
 }}
 
@@ -38,6 +38,7 @@ final AS (
         ],'') AS unique_key,
         DATE(stat_time_day) AS date,
         campaign_name,
+        IF(REGEXP_CONTAINS(campaign_name, r'_ret_'),'retargeting','UA') AS campaign_type,
         adgroup_name AS adset_name,
         impressions,
         reach,
@@ -52,6 +53,7 @@ SELECT
     unique_key,
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     impressions,
     reach,
@@ -73,6 +75,7 @@ SELECT DISTINCT
       ],'') AS unique_key,
     date,
     LOWER(campaign_name) AS campaign_name,
+    IF(REGEXP_CONTAINS(LOWER(campaign_name), r'_ret_'),'retargeting','UA') AS campaign_type,
     ad_group_name AS adset_name,
     0 AS impressions,
     0 AS reach,

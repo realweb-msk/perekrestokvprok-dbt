@@ -3,6 +3,7 @@ google_sheet AS (
     SELECT DISTINCT
         date,
         LOWER(campaign_name) campaign_name,
+        IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
         adset_name,
         costs,
         installs,
@@ -16,6 +17,7 @@ google_storage AS (
     SELECT DISTINCT
         date,
         campaign_name,
+        campaign_type,
         adset_name,
         spend,
         installs,
@@ -39,6 +41,7 @@ final AS (
 SELECT 
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     spend,
     installs,

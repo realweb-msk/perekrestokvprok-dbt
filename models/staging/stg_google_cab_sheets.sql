@@ -9,7 +9,7 @@
       "data_type": "date",
       "granularity": "day"
     },
-    cluster_by = ["campaign_name"]
+    cluster_by = ["campaign_type"]
   )
 }}
 
@@ -37,6 +37,7 @@ final AS (
         ],'') AS unique_key,
         date,
         campaign_name,
+        IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
         adset_name,
         costs AS spend,
         installs,
@@ -49,6 +50,7 @@ SELECT
     unique_key,
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     spend,
     installs,
@@ -68,6 +70,7 @@ SELECT DISTINCT
     ],'') AS unique_key,
     date,
     LOWER(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
     adset_name,
     costs AS spend,
     installs,

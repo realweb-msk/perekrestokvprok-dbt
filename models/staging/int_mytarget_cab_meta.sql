@@ -12,17 +12,19 @@ final AS (
     SELECT
         date,
         LOWER(name) AS campaign_name,
+        IF(REGEXP_CONTAINS(name, r'new'),'UA','retargeting') AS campaign_type,
         '-' adset_name,
         SUM(shows) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spent) AS spend
     FROM source
-    GROUP BY 1,2,3
+    GROUP BY 1,2,3,4
 )
 
 SELECT
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     impressions,
     clicks,

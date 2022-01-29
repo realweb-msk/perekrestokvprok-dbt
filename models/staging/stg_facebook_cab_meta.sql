@@ -9,7 +9,7 @@
       "data_type": "date",
       "granularity": "day"
     },
-    cluster_by = ["campaign_name"]
+    cluster_by = ["campaign_type"]
   )
 }}
 
@@ -19,6 +19,7 @@ WITH source AS (
   SELECT
       date_start,
       lower(campaign_name) as campaign_name,
+      IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
       adset_name,
       ad_name,
       impressions,
@@ -41,6 +42,7 @@ unnests AS (
       ],'') AS unique_key,
     date_start AS date,
     campaign_name,
+    campaign_type,
     adset_name,
     ad_name,
     SUM(impressions) AS impressions,
@@ -79,13 +81,14 @@ unnests AS (
         where action_type = 'app_custom_event.fb_mobile_add_to_cart'
     )) AS add_to_cart,
   FROM source
-  GROUP BY 1,2,3,4,5
+  GROUP BY 1,2,3,4,5,6
 )
 
 SELECT
     unique_key,
     date,
     campaign_name,
+    campaign_type,
     adset_name,
     ad_name,
     impressions,
@@ -112,6 +115,7 @@ SELECT DISTINCT
       ],'') AS unique_key,
     date,
     lower(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
     adset_name,
     ad_name,
     show AS impressions,
@@ -129,8 +133,8 @@ WHERE date < (
   FROM unnests
 )
 
--- на будущее --
--- UNION ALL
+--на будущее --
+-- UNION DISTINCT
 -- SELECT
 --     unique_key,
 --     date,
@@ -147,7 +151,6 @@ WHERE date < (
 --     first_purchase_revenue,
 --     add_to_cart
 -- FROM {{ this }}
--- )
 
 {% endif %}
 
