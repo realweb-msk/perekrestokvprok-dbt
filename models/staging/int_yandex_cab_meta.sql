@@ -7,6 +7,7 @@ WITH source AS (
         Clicks,
         Cost
     FROM {{ source('MetaCustom', 'yandex_direct_ad_keyword_stat_x5perek_direct') }}
+    WHERE Date > '2021-02-01'
 ),
 
 final AS (

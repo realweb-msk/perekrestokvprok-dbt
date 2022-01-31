@@ -23,7 +23,7 @@ final AS (
 
 SELECT
     date,
-    campaign_name,
+    REGEXP_REPLACE(campaign_name, r'\+|-', '_') AS campaign_name,
     campaign_type,
     adset_name,
     impressions,

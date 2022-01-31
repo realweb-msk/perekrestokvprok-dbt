@@ -1,5 +1,5 @@
 SELECT
-    orderDate AS order_date,
+    DATE(orderDate) AS order_date,
     region,
     promoname AS promo_name,
     promonamefull AS promo_name_full,
