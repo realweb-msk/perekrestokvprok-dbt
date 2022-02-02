@@ -406,7 +406,7 @@ google_cost AS (
         SUM(clicks) AS clicks,
         SUM(spend) AS spend,
         SUM(IF({{ platform('campaign_name') }} = 'ios', installs, NULL)) AS installs
-    FROM {{ ref('int_google_cab_sheets') }}
+    FROM {{ ref('stg_google_cab_sheets') }}
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6
 ),
@@ -478,7 +478,7 @@ rate AS (
         partner,
         platform,
         rate_for_us
-FROM {{ source('sheets_data','rate_info') }}
+FROM {{ ref('stg_rate_info') }}
 WHERE type = 'UA'
 ),
 

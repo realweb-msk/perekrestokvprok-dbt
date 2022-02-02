@@ -1,3 +1,14 @@
+{% if target.name == 'prod' %}
+
+{{
+  config(
+    materialized='table',
+  )
+}}
+
+{% endif %}
+
+
 SELECT
     start_date,
     end_date,
@@ -8,3 +19,4 @@ SELECT
     rate_for_us,
     type
 FROM {{ source('sheets_data','rate_info') }}
+WHERE start_date IS NOT NULL

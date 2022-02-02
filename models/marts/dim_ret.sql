@@ -209,12 +209,12 @@ tw_cost AS (
     SELECT
         date,
         campaign_name,
-        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ promo_type('campaign_name', '"-"') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM {{ ref('int_twitter_cab') }}
+    FROM {{ ref('stg_twitter_cab_sheets') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tw')
     GROUP BY 1,2,3,4
@@ -373,7 +373,7 @@ google_cost AS (
         -- SUM(clicks),
         SUM(spend) AS spend,
         SUM(installs) AS re_engagement
-    FROM {{ ref('int_google_cab_sheets') }}
+    FROM {{ ref('stg_google_cab_sheets') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb_')
     GROUP BY 1,2,3,4
@@ -424,7 +424,7 @@ rate AS (
         partner,
         platform,
         rate_for_us
-FROM {{ source('sheets_data','rate_info') }}
+FROM {{ ref('stg_rate_info') }}
 WHERE type = 'RTG'
 ),
 

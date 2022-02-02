@@ -10,15 +10,6 @@ SELECT
     unig_event AS uniq_event_count,
     EventRevenue AS event_revenue,
     cnt_event AS event_count,
-    TRIM(
-        REGEXP_REPLACE(
-            LOWER(
-                REGEXP_REPLACE(
-                    REGEXP_REPLACE(
-                        REGEXP_REPLACE(Campaign,  r'(_install_week.*)', '_install_weekend'), 
-                    r'(_install_promo_gl.*)', '_install_promo_global'), 
-                r'(_install_promo_re.*)', '_install_promo_regular')
-            ), r'\+|-', '_')
-        ) AS campaign_name
+    {{ normalize('campaign') }} AS campaign_name
 FROM  {{ source ('agg_data', 'AF_client_data')}}
 

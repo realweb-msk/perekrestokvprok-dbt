@@ -49,7 +49,7 @@ final AS (
 SELECT
     unique_key,
     date,
-    campaign_name,
+    {{ normalize('campaign_name') }} AS campaign_name,
     campaign_type,
     adset_name,
     spend,

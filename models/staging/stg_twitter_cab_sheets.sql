@@ -41,7 +41,7 @@ final AS (
 SELECT
     unique_key,
     date,
-    campaign_name,
+    {{ normalize('campaign_name') }} AS campaign_name,
     IF(REGEXP_CONTAINS(campaign_name, r'_old_'),'retargeting','UA') AS campaign_type,
     impressions,
     spend
