@@ -1,5 +1,5 @@
 SELECT
-    PlacementID,
+    PlacementID AS placement_id,
     Placement,
-    InsertionOrderID
+    InsertionOrderID AS insertion_order_id
 FROM {{ source('DCM', 'Placemant_dict') }}

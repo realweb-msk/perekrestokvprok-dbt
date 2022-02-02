@@ -30,6 +30,10 @@ WITH source AS (
       conversions,
       conversion_values
   FROM  {{ source('test2', 'facebook_ads_ad_stat_minimal_134923481805102') }}
+  -- добавить после всех проверок
+  -- {% if is_incremental() %}
+  -- WHERE date_start = DATE_ADD(CURRENT_DATE(), INTERVAL -1 DAY)
+  -- {% endif %}
 ),
 
 unnests AS (

@@ -2,13 +2,9 @@ WITH af_conversions AS (
     SELECT
         date,
         is_retargeting,
-        af_cid,
+        --af_cid,
         --adset_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         mediasource,
         platform,
         CASE
@@ -33,15 +29,8 @@ facebook AS (
     SELECT
         date,
         campaign_name,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'p:ios') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'p:and') THEN 'android'
-            ELSE 'no_platform' END as platform,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type, 
         SUM(installs) AS re_engagement,
         SUM(revenue) AS revenue,
         SUM(purchase) AS purchase,
@@ -58,15 +47,8 @@ yandex_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type, 
+        {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
@@ -119,15 +101,8 @@ vk_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
@@ -180,15 +155,8 @@ mt_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
@@ -241,15 +209,8 @@ tw_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
@@ -301,15 +262,8 @@ tiktok_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend,
@@ -363,15 +317,8 @@ asa_cost AS (
     SELECT
         date,
         campaign_name,
-        CASE
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*regular') THEN 'promo regular'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*global') THEN 'promo global'
-            WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name],'')), r'promo.*feed') THEN 'promo feed'
-        ELSE '-' END as promo_type,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ios_') THEN 'ios'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_and_|android') THEN 'android'
-            ELSE 'no_platform' END as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        'ios' as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
@@ -414,6 +361,62 @@ asa AS (
     AND COALESCE(asa_convs.campaign_name, asa_cost.campaign_name) != 'None'
 ),
 
+----------------------- Google Ads -------------------------
+
+google_cost AS (
+    SELECT
+        date,
+        campaign_name,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
+        -- SUM(impressions),
+        -- SUM(clicks),
+        SUM(spend) AS spend,
+        SUM(installs) AS re_engagement
+    FROM {{ ref('int_google_cab_sheets') }}
+    WHERE campaign_type = 'retargeting'
+    AND REGEXP_CONTAINS(campaign_name, r'realweb_')
+    GROUP BY 1,2,3,4
+),
+
+google_convs AS (
+    SELECT 
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+    FROM af_conversions
+    WHERE mediasource ='googleadwords_int'
+    AND is_retargeting = TRUE
+    AND REGEXP_CONTAINS(campaign_name, r'realweb')
+    AND REGEXP_CONTAINS(campaign_name,  r'\[old\]')
+    GROUP BY 1,2,3,4
+),
+
+google AS (
+    SELECT
+        COALESCE(google_convs.date, google_cost.date) AS date,
+        COALESCE(google_convs.campaign_name, google_cost.campaign_name) AS campaign_name,
+        COALESCE(google_convs.platform, google_cost.platform) AS platform,
+        COALESCE(google_convs.promo_type, google_cost.promo_type) AS promo_type,
+        COALESCE(re_engagement,0) AS re_engagement,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(spend,0) AS spend,
+        'Google Ads' AS source,
+    FROM google_convs
+    FULL OUTER JOIN google_cost
+    ON google_convs.date = google_cost.date 
+    AND google_convs.campaign_name = google_cost.campaign_name
+    AND google_convs.promo_type = google_cost.promo_type
+    WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
+    AND COALESCE(google_convs.campaign_name, google_cost.campaign_name) != 'None'
+),
+
+----------------------- inapp -------------------------
+
 rate AS (
     SELECT
         start_date,
@@ -430,14 +433,7 @@ inapp_events AS (
         date,
         campaign_name,
         platform,
-        CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Think Mobile'
-            WHEN REGEXP_CONTAINS(campaign_name, r'_abc_|_sf_') THEN 'Mediasurfer'
-        ELSE '-' END as partner,
+        {{ partner('campaign_name') }} AS partner,
         promo_type,
         event_name,
         event_revenue,
@@ -497,6 +493,8 @@ final AS (
     SELECT * FROM facebook
     UNION ALL
     SELECT * FROM inapp
+    UNION ALL
+    SELECT * FROM google
 )
 
 SELECT 

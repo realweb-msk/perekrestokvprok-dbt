@@ -7,5 +7,5 @@ SELECT
     EventName AS event_name,
     unig_event AS uniq_event,
     EventRevenue AS revenue,
-    cnt_event
+    cnt_event AS event_count
 FROM {{ source('AF_data', 'af_atr_data_for_media_ads_TABLE') }}
