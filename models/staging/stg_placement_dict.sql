@@ -14,4 +14,4 @@ SELECT
     Placement,
     InsertionOrderID AS insertion_order_id
 FROM {{ source('DCM', 'Placemant_dict') }}
-WHERE placement_id IS NOT NULL
+WHERE PlacementID IS NOT NULL
