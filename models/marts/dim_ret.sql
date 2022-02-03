@@ -375,7 +375,7 @@ google_cost AS (
         SUM(installs) AS re_engagement
     FROM {{ ref('stg_google_cab_sheets') }}
     WHERE campaign_type = 'retargeting'
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_')
+    AND REGEXP_CONTAINS(campaign_name, r'realweb_|ohm')
     GROUP BY 1,2,3,4
 ),
 
@@ -390,8 +390,8 @@ google_convs AS (
     FROM af_conversions
     WHERE mediasource ='googleadwords_int'
     AND is_retargeting = TRUE
-    AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    AND REGEXP_CONTAINS(campaign_name,  r'\[old\]')
+    AND REGEXP_CONTAINS(campaign_name, r'realweb|ohm')
+    AND REGEXP_CONTAINS(campaign_name,  r'[_\[]old[\]_]')
     GROUP BY 1,2,3,4
 ),
 
@@ -506,5 +506,6 @@ SELECT
     revenue,
     purchase,
     spend,
-    source
+    source,
+    {{ aud('campaign_name', 'source', 'platform') }} AS auditory
 FROM final

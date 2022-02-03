@@ -408,6 +408,7 @@ google_cost AS (
         SUM(IF({{ platform('campaign_name') }} = 'ios', installs, NULL)) AS installs
     FROM {{ ref('stg_google_cab_sheets') }}
     WHERE campaign_type = 'UA'
+    AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
 ),
 

@@ -37,7 +37,7 @@ final AS (
         ],'') AS unique_key,
         date,
         campaign_name,
-        IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
+        IF(REGEXP_CONTAINS(campaign_name, r'[_\[]old[\]_]'),'retargeting','UA') AS campaign_type,
         adset_name,
         costs AS spend,
         installs,
@@ -58,29 +58,29 @@ SELECT
     impressions
 FROM final
 
-{% if not is_incremental() %}
+-- {% if not is_incremental() %}
 
--- первый раз --
-UNION ALL
-SELECT DISTINCT
-    ARRAY_TO_STRING([
-            CAST(date AS STRING),
-            LOWER(campaign_name),
-            adset_name
-    ],'') AS unique_key,
-    date,
-    LOWER(campaign_name) campaign_name,
-    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
-    adset_name,
-    costs AS spend,
-    installs,
-    clicks,
-    impressions
-FROM {{ source('agg_data', 'google_ads_costs_and_installs_sum') }}
-WHERE date < (
-  SELECT MIN(date)
-  FROM final
-)
-AND date IS NOT NULL
+-- -- первый раз --
+-- UNION ALL
+-- SELECT DISTINCT
+--     ARRAY_TO_STRING([
+--             CAST(date AS STRING),
+--             LOWER(campaign_name),
+--             adset_name
+--     ],'') AS unique_key,
+--     date,
+--     LOWER(campaign_name) campaign_name,
+--     IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
+--     adset_name,
+--     costs AS spend,
+--     installs,
+--     clicks,
+--     impressions
+-- FROM {{ source('agg_data', 'google_ads_costs_and_installs_sum') }}
+-- WHERE date NOT IN  < (
+--   SELECT DISTINCT date
+--   FROM final
+-- )
+-- AND date IS NOT NULL
 
-{% endif %}
+-- {% endif %}
