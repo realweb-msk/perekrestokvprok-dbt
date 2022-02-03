@@ -47,7 +47,7 @@ final AS (
     LEFT JOIN promo_data
     ON LOWER(client_data.promo_code) = LOWER(promo_data.promocode)
     AND DATE(client_data.order_date) BETWEEN promo_data.date_start AND promo_data.date_end
-    WHERE type = 'rtg'
+    WHERE type is not null
     AND order_id NOT IN (
         SELECT DISTINCT order_id
         FROM af_orders

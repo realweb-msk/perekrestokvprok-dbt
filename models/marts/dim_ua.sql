@@ -292,7 +292,7 @@ tiktok AS (
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(spend,0) AS spend,
-        'Tiktok' AS source,
+        'TikTok' AS source,
         'social' AS adv_type
     FROM tiktok_convs
     FULL OUTER JOIN tiktok_cost
@@ -521,8 +521,8 @@ inapp AS (
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(first_purchase * rate_for_us,0)  AS spend,
-        'in-app' AS source,
-        'in-app' AS adv_type
+        'inapp' AS source,
+        'inapp' AS adv_type
     FROM inapp_convs
     LEFT JOIN rate
     ON {{ partner('campaign_name') }} = rate.partner 
