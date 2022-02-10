@@ -1,4 +1,4 @@
-{% macro geo(campaign_name, adset_name='-') %}
+{% macro geo(campaign_name, adset_name='"-"') %}
     CASE
           WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([{{campaign_name}}, {{adset_name}}], ' ')), r'msk+spb|mskspb|msk_spb') THEN 'МСК, СПб'
           WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([{{campaign_name}}, {{adset_name}}], ' ')), r'spb') THEN 'СПб'

@@ -478,6 +478,87 @@ google AS (
     AND COALESCE(google_convs.campaign_name, google_cost.campaign_name) != 'None'
 ),
 
+----------------------- huawei -------------------------
+
+huawei_cost AS (
+    ---- TODO: поменять на источник костов -----
+    SELECT
+        DATE('2010-12-31') date,
+        campaign_name,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ geo('campaign_name', 'adset_name') }} AS geo,
+        campaign_type,
+        SUM(impressions) AS impressions,
+        SUM(clicks) AS clicks,
+        SUM(spend) AS spend
+    FROM {{ ref('int_mytarget_cab_meta') }}
+    WHERE campaign_type = 'UA'
+    AND REGEXP_CONTAINS(campaign_name, r'realweb')
+    GROUP BY 1,2,3,4,5,6
+),
+
+huawei_convs AS (
+    SELECT 
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE is_retargeting = FALSE
+    AND REGEXP_CONTAINS(campaign_name, r'realweb_hw')
+    AND REGEXP_CONTAINS(campaign_name, r'new')
+    GROUP BY 1,2,3,4,5
+),
+
+huawei AS (
+    SELECT
+        COALESCE(huawei_convs.date, huawei_cost.date) AS date,
+        COALESCE(huawei_convs.campaign_name, huawei_cost.campaign_name) AS campaign_name,
+        COALESCE(huawei_convs.platform, huawei_cost.platform) AS platform,
+        COALESCE(huawei_convs.promo_type, huawei_cost.promo_type) AS promo_type,
+        COALESCE(huawei_convs.geo, huawei_cost.geo) AS geo,
+        COALESCE(huawei_convs.campaign_type, huawei_cost.campaign_type) AS campaign_type,
+        COALESCE(impressions,0) AS impressions,
+        COALESCE(clicks,0) AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(spend,0) AS spend,
+        'Huawei' AS source,
+        'context' AS adv_type
+    FROM huawei_convs
+    FULL OUTER JOIN huawei_cost
+    ON huawei_convs.date = huawei_cost.date 
+    AND huawei_convs.campaign_name = huawei_cost.campaign_name
+    AND huawei_convs.promo_type = huawei_cost.promo_type
+    AND huawei_convs.geo = huawei_cost.geo
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(spend,0) > 0
+    AND COALESCE(huawei_convs.campaign_name, huawei_cost.campaign_name) != 'None'
+    AND huawei_cost.date != '2010-12-31'
+),
+
 ----------------------inapp----------------------------
 
 rate AS (
@@ -563,6 +644,8 @@ unions AS (
     SELECT * FROM facebook
     UNION ALL
     SELECT * FROM google
+    UNION ALL
+    SELECT * FROM huawei
     UNION ALL
     SELECT * FROM inapp
 ),

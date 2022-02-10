@@ -514,5 +514,6 @@ SELECT
     purchase,
     spend,
     source,
-    {{ aud('campaign_name', 'source', 'platform') }} AS auditory
+    {{ aud('campaign_name', 'source', 'platform') }} AS auditory,
+    {{ geo('campaign_name') }} AS geo
 FROM final
