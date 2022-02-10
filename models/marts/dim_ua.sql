@@ -351,6 +351,7 @@ asa_convs AS (
         REGEXP_CONTAINS(campaign_name, r'\(exact\)|зоо') OR
         mediasource = 'Apple Search Ads'
     )
+    AND is_retargeting = FALSE
     GROUP BY 1,2,3,4,5
 ),
 
@@ -409,6 +410,9 @@ google_cost AS (
     FROM {{ ref('stg_google_cab_sheets') }}
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
+    AND campaign_name NOT IN (
+            'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
+            'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
     GROUP BY 1,2,3,4,5,6
 ),
 
@@ -429,6 +433,10 @@ google_convs AS (
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
     FROM af_conversions
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb_uac_')
+    AND is_retargeting = FALSE
+    AND campaign_name NOT IN (
+            'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
+            'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
     GROUP BY 1,2,3,4,5
 ),
 

@@ -37,6 +37,8 @@
         THEN 'Installed_the_app_but_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER({{campaign_name}}), 'registered_but_not_buy_rtg')
         THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER({{campaign_name}}), 'firebase')
+        THEN  "Предиктивная аудитория" 
         WHEN {{source}} = 'inapp'
         THEN 'Аудитории площадки (inapp)'
         ELSE 'Нет аудитории' END

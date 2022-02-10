@@ -374,7 +374,11 @@ google_cost AS (
         SUM(spend) AS spend,
         SUM(installs) AS re_engagement
     FROM {{ ref('stg_google_cab_sheets') }}
-    WHERE campaign_type = 'retargeting'
+    WHERE (campaign_type = 'retargeting'
+    --- костыль 10.02.2022 X5RGPEREK-272 ---
+    OR campaign_name IN (
+            'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
+            'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]'))
     AND REGEXP_CONTAINS(campaign_name, r'realweb_|ohm')
     GROUP BY 1,2,3,4
 ),
@@ -391,7 +395,10 @@ google_convs AS (
     WHERE mediasource ='googleadwords_int'
     AND is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb|ohm')
-    AND REGEXP_CONTAINS(campaign_name,  r'[_\[]old[\]_]')
+    AND (REGEXP_CONTAINS(campaign_name,  r'[_\[]old[\]_]')
+    OR campaign_name IN (
+            'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
+            'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]'))
     GROUP BY 1,2,3,4
 ),
 

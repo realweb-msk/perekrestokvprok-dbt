@@ -37,7 +37,9 @@ final AS (
         ],'') AS unique_key,
         date,
         campaign_name,
-        IF(REGEXP_CONTAINS(campaign_name, r'[_\[]old[\]_]'),'retargeting','UA') AS campaign_type,
+        IF(
+          REGEXP_CONTAINS(campaign_name, r'[_\[]old[\]_]'),
+          'retargeting','UA') AS campaign_type,
         adset_name,
         costs AS spend,
         installs,
