@@ -21,6 +21,7 @@ final AS (
                 (IF(UniqueReach_ImpressionReach='-','0',UniqueReach_ImpressionReach)) AS INT64)
             ) AS impression_reach,
   FROM source
+  WHERE pd_rw = 1
   GROUP BY 1, 2, 3
 )
 
