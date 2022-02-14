@@ -5,7 +5,8 @@ WITH clicks_table AS (
         insertion_order_id,
         impressions,
         clicks,
-        revenue_adv_currency
+        revenue_adv_currency,
+        profit_advertiser_currency
     FROM {{ ref('int_google_dbm_impressions_clicks_revenue_meta') }}
 ),
 
@@ -59,6 +60,7 @@ final AS (
         clicks_table.clicks,
         reach.impression_reach,
         clicks_table.revenue_adv_currency,
+        clicks_table.profit_advertiser_currency,
         SUM(activity.purchase) AS purchase,
         SUM(activity.retarget) AS retarget,
         SUM(activity.installs) AS installs,
@@ -73,7 +75,7 @@ final AS (
     LEFT JOIN activity ON activity.interaction_date = clicks_table.date
         AND placement_dict.placement_id = activity.placement_id
     LEFT JOIN af ON af.date = clicks_table.date AND placement_dict.placement_id = af.campaign_name
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6,7,8
     ORDER BY 1,2
 )
 
@@ -85,6 +87,7 @@ SELECT
     clicks,
     impression_reach,
     revenue_adv_currency,
+    profit_advertiser_currency,
     purchase,
     retarget,
     installs,
