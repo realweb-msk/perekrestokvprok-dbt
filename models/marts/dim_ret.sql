@@ -1,3 +1,8 @@
+/* 
+для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
+или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ret
+*/
+
 WITH af_conversions AS (
     SELECT
         date,
@@ -5,6 +10,7 @@ WITH af_conversions AS (
         --af_cid,
         --adset_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         mediasource,
         platform,
         CASE
@@ -31,6 +37,7 @@ facebook AS (
         campaign_name,
         {{ platform('campaign_name') }} as platform,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type, 
+        {{ promo_search('campaign_name', 'adset_name', 'ad_name') }} as promo_search,
         SUM(installs) AS re_engagement,
         SUM(revenue) AS revenue,
         SUM(purchase) AS purchase,
@@ -38,7 +45,7 @@ facebook AS (
         'Facebook' AS source
     FROM {{ ref('stg_facebook_cab_meta') }}
     WHERE campaign_type = 'retargeting'
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 ----------------------- yandex -------------------------
@@ -49,13 +56,14 @@ yandex_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type, 
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
     FROM {{ ref('int_yandex_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 yandex_convs AS (
@@ -64,6 +72,7 @@ yandex_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
@@ -72,7 +81,7 @@ yandex_convs AS (
     AND is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 yandex AS (
@@ -81,6 +90,7 @@ yandex AS (
         COALESCE(yandex_convs.campaign_name, yandex_cost.campaign_name) AS campaign_name,
         COALESCE(yandex_convs.platform, yandex_cost.platform) AS platform,
         COALESCE(yandex_convs.promo_type, yandex_cost.promo_type) AS promo_type,
+        COALESCE(yandex_convs.promo_search, yandex_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -91,6 +101,7 @@ yandex AS (
     ON yandex_convs.date = yandex_cost.date 
     AND yandex_convs.campaign_name = yandex_cost.campaign_name
     AND yandex_convs.promo_type = yandex_cost.promo_type
+    AND yandex_convs.promo_search = yandex_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(yandex_convs.campaign_name, yandex_cost.campaign_name) != 'None'
 ),
@@ -103,13 +114,14 @@ vk_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
     FROM {{ ref('int_vk_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 vk_convs AS (
@@ -118,6 +130,7 @@ vk_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
@@ -126,7 +139,7 @@ vk_convs AS (
     AND is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 vk AS (
@@ -135,6 +148,7 @@ vk AS (
         COALESCE(vk_convs.campaign_name, vk_cost.campaign_name) AS campaign_name,
         COALESCE(vk_convs.platform, vk_cost.platform) AS platform,
         COALESCE(vk_convs.promo_type, vk_cost.promo_type) AS promo_type,
+        COALESCE(vk_convs.promo_search, vk_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -145,6 +159,7 @@ vk AS (
     ON vk_convs.date = vk_cost.date 
     AND vk_convs.campaign_name = vk_cost.campaign_name
     AND vk_convs.promo_type = vk_cost.promo_type
+    AND vk_convs.promo_search = vk_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(vk_convs.campaign_name, vk_cost.campaign_name) != 'None'
 ),
@@ -157,13 +172,14 @@ mt_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
     FROM {{ ref('int_mytarget_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 mt_convs AS (
@@ -172,6 +188,7 @@ mt_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
@@ -180,7 +197,7 @@ mt_convs AS (
     AND is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 mt AS (
@@ -189,6 +206,7 @@ mt AS (
         COALESCE(mt_convs.campaign_name, mt_cost.campaign_name) AS campaign_name,
         COALESCE(mt_convs.platform, mt_cost.platform) AS platform,
         COALESCE(mt_convs.promo_type, mt_cost.promo_type) AS promo_type,
+        COALESCE(mt_convs.promo_search, mt_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -199,6 +217,7 @@ mt AS (
     ON mt_convs.date = mt_cost.date 
     AND mt_convs.campaign_name = mt_cost.campaign_name
     AND mt_convs.promo_type = mt_cost.promo_type
+    AND mt_convs.promo_search = mt_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(mt_convs.campaign_name, mt_cost.campaign_name) != 'None'
 ),
@@ -211,13 +230,14 @@ tw_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', '"-"') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
     FROM {{ ref('stg_twitter_cab_sheets') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tw')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 tw_convs AS (
@@ -226,6 +246,7 @@ tw_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
@@ -233,7 +254,7 @@ tw_convs AS (
     WHERE is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tw')
     AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 tw AS (
@@ -242,6 +263,7 @@ tw AS (
         COALESCE(tw_convs.campaign_name, tw_cost.campaign_name) AS campaign_name,
         COALESCE(tw_convs.platform, tw_cost.platform) AS platform,
         COALESCE(tw_convs.promo_type, tw_cost.promo_type) AS promo_type,
+        COALESCE(tw_convs.promo_search, tw_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -252,6 +274,7 @@ tw AS (
     ON tw_convs.date = tw_cost.date 
     AND tw_convs.campaign_name = tw_cost.campaign_name
     AND tw_convs.promo_type = tw_cost.promo_type
+    AND tw_convs.promo_search = tw_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(tw_convs.campaign_name, tw_cost.campaign_name) != 'None'
 ),
@@ -264,6 +287,7 @@ tiktok_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend,
@@ -272,7 +296,7 @@ tiktok_cost AS (
     FROM {{ ref('stg_tiktok_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 tiktok_convs AS (
@@ -281,6 +305,7 @@ tiktok_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         --SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
@@ -288,7 +313,7 @@ tiktok_convs AS (
     WHERE  is_retargeting = TRUE
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tiktok')
     AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 tiktok AS (
@@ -297,6 +322,7 @@ tiktok AS (
         COALESCE(tiktok_convs.campaign_name, tiktok_cost.campaign_name) AS campaign_name,
         COALESCE(tiktok_convs.platform, tiktok_cost.platform) AS platform,
         COALESCE(tiktok_convs.promo_type, tiktok_cost.promo_type) AS promo_type,
+        COALESCE(tiktok_convs.promo_search, tiktok_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -307,6 +333,7 @@ tiktok AS (
     ON tiktok_convs.date = tiktok_cost.date 
     AND tiktok_convs.campaign_name = tiktok_cost.campaign_name
     AND tiktok_convs.promo_type = tiktok_cost.promo_type
+    AND tiktok_convs.promo_search = tiktok_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(tiktok_convs.campaign_name, tiktok_cost.campaign_name) != 'None'
 ),
@@ -318,13 +345,14 @@ asa_cost AS (
         date,
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         'ios' as platform,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
     FROM {{ ref('int_asa_cab_meta') }}
     WHERE campaign_type = 'retargeting'
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 asa_convs AS (
@@ -333,12 +361,13 @@ asa_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
     FROM af_conversions
     WHERE REGEXP_CONTAINS(campaign_name, r'\(r\)')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 asa AS (
@@ -347,6 +376,7 @@ asa AS (
         COALESCE(asa_convs.campaign_name, asa_cost.campaign_name) AS campaign_name,
         COALESCE(asa_convs.platform, asa_cost.platform) AS platform,
         COALESCE(asa_convs.promo_type, asa_cost.promo_type) AS promo_type,
+        COALESCE(asa_convs.promo_search, asa_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -357,6 +387,7 @@ asa AS (
     ON asa_convs.date = asa_cost.date 
     AND asa_convs.campaign_name = asa_cost.campaign_name
     AND asa_convs.promo_type = asa_cost.promo_type
+    AND asa_convs.promo_search = asa_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(asa_convs.campaign_name, asa_cost.campaign_name) != 'None'
 ),
@@ -369,6 +400,7 @@ google_cost AS (
         campaign_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend,
@@ -380,7 +412,7 @@ google_cost AS (
             'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
             'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]'))
     AND REGEXP_CONTAINS(campaign_name, r'realweb_|ohm')
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 google_convs AS (
@@ -389,6 +421,7 @@ google_convs AS (
         campaign_name,
         platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
     FROM af_conversions
@@ -399,7 +432,7 @@ google_convs AS (
     OR campaign_name IN (
             'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
             'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]'))
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 google AS (
@@ -408,6 +441,7 @@ google AS (
         COALESCE(google_convs.campaign_name, google_cost.campaign_name) AS campaign_name,
         COALESCE(google_convs.platform, google_cost.platform) AS platform,
         COALESCE(google_convs.promo_type, google_cost.promo_type) AS promo_type,
+        COALESCE(google_convs.promo_search, google_cost.promo_search) AS promo_search,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
@@ -418,6 +452,7 @@ google AS (
     ON google_convs.date = google_cost.date 
     AND google_convs.campaign_name = google_cost.campaign_name
     AND google_convs.promo_type = google_cost.promo_type
+    AND google_convs.promo_search = google_cost.promo_search
     WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     AND COALESCE(google_convs.campaign_name, google_cost.campaign_name) != 'None'
 ),
@@ -442,6 +477,7 @@ inapp_events AS (
         platform,
         {{ partner('campaign_name') }} AS partner,
         promo_type,
+        promo_search,
         event_name,
         event_revenue,
         event_count,
@@ -459,6 +495,7 @@ inapp AS (
         campaign_name,
         inapp_events.platform,
         promo_type,
+        promo_search,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
@@ -481,7 +518,7 @@ inapp AS (
     ON inapp_events.partner = rate.partner 
     AND inapp_events.date BETWEEN rate.start_date AND rate.end_date
     AND inapp_events.platform = rate.platform 
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 ),
 
 final AS (
@@ -509,6 +546,7 @@ SELECT
     campaign_name,
     platform,
     promo_type,
+    promo_search,
     re_engagement,
     revenue,
     purchase,
