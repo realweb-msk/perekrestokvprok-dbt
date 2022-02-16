@@ -54,7 +54,10 @@ sources:
     database: perekrestokvprok-bq
     tables:
       - name: vk_campaign_stat_1900013586_1605495720
-        description: Meta VK (Autofeed VK Ads 1900013586_1605495720 - https://meta.realweb.ru/card?e=2770&o=8c107494-12ab-4d13-969a-14b552e357a0&a=58)
+        description: СТАРЫЙ Meta VK (Autofeed VK Ads 1900013586_1605495720 - https://meta.realweb.ru/card?e=2770&o=8c107494-12ab-4d13-969a-14b552e357a0&a=58)
+
+      - name: vk_campaign_stat_1900013586_1607141417
+        description: НОВЫЙ Meta VK (Autofeed VK Ads 1900013586_1607141417 - https://meta.realweb.ru/card?e=2770&o=c237257a-694b-4dd5-b9a6-42e0588ccdb0&a=58)
 
       - name: yandex_direct_ad_keyword_stat_x5perek_direct
         description: Meta Yandex Direct (Autofeed Yandex Direct x5perek-direct Статистика по фразам и объявлениям (CUSTOM_REPORT))
