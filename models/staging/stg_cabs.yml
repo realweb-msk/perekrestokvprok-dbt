@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_twitter_cab_sheets
+    description: ""
+    columns:
+      - name: unique_key
+        description: ""
+
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: spend
+        description: ""

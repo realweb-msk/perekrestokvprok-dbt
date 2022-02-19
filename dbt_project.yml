@@ -8,6 +8,8 @@ profile: 'perekrestokvprok'
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
+tests:
+  +store_failures: true
 seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
