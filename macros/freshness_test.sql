@@ -18,14 +18,11 @@
     FROM mistakes
 
 {% else %}
-    --для разработки
-    SELECT
-        '{{ model }}' AS max_date
-    FROM {{ model }} 
-    LIMIT 1
-    -- select x
-    -- from {{ model }}, UNNEST([1]) as x
-    -- where x < 1
+
+    SELECT x
+    FROM {{ model }}, UNNEST([1]) AS x
+    WHERE x < 1
+
 {% endif %}
 
 {% endtest %}
