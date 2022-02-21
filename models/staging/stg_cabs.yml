@@ -23,3 +23,435 @@ models:
 
       - name: spend
         description: ""
+
+  - name: stg_tiktok_cab_meta
+    description: ""
+    columns:
+      - name: unique_key
+        description: ""
+
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: reach
+        description: ""
+
+      - name: spend
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: purchase
+        description: ""
+
+      - name: first_purchase
+        description: ""
+
+  - name: stg_google_dbm
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: advertiser
+        description: ""
+
+      - name: advertiser_id
+        description: ""
+
+      - name: advertiser_currency
+        description: ""
+
+      - name: insertion_order
+        description: ""
+
+      - name: insertion_order_id
+        description: ""
+
+      - name: line_item
+        description: ""
+
+      - name: line_item_id
+        description: ""
+
+      - name: line_item_type
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: click_rate_ctr
+        description: ""
+
+      - name: revenue_adv_currency
+        description: ""
+
+      - name: profit_advertiser_currency
+        description: ""
+
+      - name: profit_margin
+        description: ""
+
+  - name: stg_google_cab_sheets
+    description: ""
+    columns:
+      - name: unique_key
+        description: ""
+
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: spend
+        description: ""
+
+      - name: installs
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: impressions
+        description: ""
+
+  - name: stg_af_for_media
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: is_retargeting
+        description: ""
+
+      - name: campaign_name
+        description: ""
+
+      - name: media_source
+        description: ""
+
+      - name: platform
+        description: ""
+
+      - name: event_name
+        description: ""
+
+      - name: uniq_event
+        description: ""
+
+      - name: revenue
+        description: ""
+
+      - name: event_count
+        description: ""
+
+  - name: stg_facebook_cab_meta
+    description: ""
+    columns:
+      - name: unique_key
+        description: ""
+
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: ad_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: installs
+        description: ""
+
+      - name: spend
+        description: ""
+
+      - name: purchase
+        description: ""
+
+      - name: revenue
+        description: ""
+
+      - name: first_purchase
+        description: ""
+
+      - name: first_purchase_revenue
+        description: ""
+
+      - name: add_to_cart
+        description: ""
+
+  - name: stg_af_client_data
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: is_retargeting
+        description: ""
+
+      - name: af_cid
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: mediasource
+        description: ""
+
+      - name: event_value
+        description: ""
+
+      - name: platform
+        description: ""
+
+      - name: event_name
+        description: ""
+
+      - name: uniq_event_count
+        description: ""
+
+      - name: event_revenue
+        description: ""
+
+      - name: event_count
+        description: ""
+
+      - name: campaign_name
+        description: ""
+
+  - name: int_yandex_cab_meta
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: spend
+        description: ""
+
+  - name: int_vk_cab_meta
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: spend
+        description: ""
+
+  - name: int_mytarget_cab_meta
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: spend
+        description: ""
+
+  - name: int_google_dcm_reach
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: insertion_order
+        description: ""
+
+      - name: insertion_order_id
+        description: ""
+
+      - name: impression_reach
+        description: ""
+
+  - name: int_google_dcm_activity_meta
+    description: ""
+    columns:
+      - name: interaction_date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: placement_id
+        description: ""
+
+      - name: placement
+        description: ""
+
+      - name: purchase
+        description: ""
+
+      - name: retarget
+        description: ""
+
+      - name: installs
+        description: ""
+
+  - name: int_google_dbm_impressions_clicks_revenue_meta
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: insertion_order
+        description: ""
+
+      - name: insertion_order_id
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: revenue_adv_currency
+        description: ""
+
+  - name: int_google_dbm_dv360_cost
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: spend
+        description: ""
+
+  - name: int_asa_cab_meta
+    description: ""
+    columns:
+      - name: date
+        description: ""
+        tests: 
+            - freshness
+
+      - name: campaign_name
+        description: ""
+
+      - name: campaign_type
+        description: ""
+
+      - name: adset_name
+        description: ""
+
+      - name: impressions
+        description: ""
+
+      - name: clicks
+        description: ""
+
+      - name: spend
+        description: ""
