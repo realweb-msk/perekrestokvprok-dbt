@@ -14,9 +14,10 @@ seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-target-path: "target"  
+target-path: "docs_netlify"  
 clean-targets:         
   - "target"
+  - "docs_netlify"
   - "dbt_modules"
 
 
