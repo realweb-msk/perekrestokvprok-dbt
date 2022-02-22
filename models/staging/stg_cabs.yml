@@ -68,7 +68,8 @@ models:
       - name: date
         description: ""
         tests: 
-            - freshness
+            - freshness:
+                days: "2"
 
       - name: advertiser
         description: ""
@@ -347,7 +348,8 @@ models:
       - name: date
         description: ""
         tests: 
-            - freshness
+            - freshness:
+                days: "2"
 
       - name: insertion_order
         description: ""
@@ -387,7 +389,8 @@ models:
       - name: date
         description: ""
         tests: 
-            - freshness
+            - freshness:
+                days: "2"
 
       - name: insertion_order
         description: ""
