@@ -18,7 +18,7 @@
     FROM mistakes
 
 {% else %}
-
+    -- селектим ничего
     SELECT x
     FROM {{ model }}, UNNEST([1]) AS x
     WHERE x < 1
