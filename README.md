@@ -21,7 +21,7 @@ dbt docs generate --target prod
 
 ## Как начать работать с проектом?
 
-Спасибо @nirakon за подробную инструкцию.
+Спасибо [@nirakon](https://github.com/nirakon) за подробную инструкцию.
 
 1. [Устанавливаем Miniconda с Python 3.8](https://docs.conda.io/en/latest/miniconda.html)
 2. [Устанавливаем Visual Studio Code](https://code.visualstudio.com/download)
