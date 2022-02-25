@@ -477,7 +477,8 @@ facebook AS (
         SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
         'Facebook' AS source,
         "social" as adv_type
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -1636,10 +1637,13 @@ asa_cost AS (
     ELSE '-' END
 
  as promo_search,
-        SUM(impressions) AS impressions,
-        SUM(clicks) AS clicks,
-        SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta`
+        SUM(meta.impressions) AS impressions,
+        SUM(sheet.clicks) AS clicks,
+        SUM(sheet.spend) AS spend
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets` sheet
+    --`perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta`
+    LEFT JOIN `perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta` meta
+    USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
 ),

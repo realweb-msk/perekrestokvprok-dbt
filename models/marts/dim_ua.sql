@@ -48,7 +48,8 @@ facebook AS (
         SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
         'Facebook' AS source,
         "social" as adv_type
-    FROM {{ ref('stg_facebook_cab_meta') }}
+    FROM {{ ref('stg_facebook_cab_sheets') }}
+    --{{ ref('stg_facebook_cab_meta') }}
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -344,10 +345,13 @@ asa_cost AS (
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
         {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
-        SUM(impressions) AS impressions,
-        SUM(clicks) AS clicks,
-        SUM(spend) AS spend
-    FROM {{ ref('int_asa_cab_meta') }}
+        SUM(meta.impressions) AS impressions,
+        SUM(sheet.clicks) AS clicks,
+        SUM(sheet.spend) AS spend
+    FROM {{ ref('stg_asa_cab_sheets') }} sheet
+    --{{ ref('int_asa_cab_meta') }}
+    LEFT JOIN {{ ref('int_asa_cab_meta') }} meta
+    USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
 ),

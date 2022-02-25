@@ -45,7 +45,8 @@ facebook AS (
         SUM(purchase) AS purchase,
         SUM(spend) AS spend,
         'Facebook' AS source
-    FROM {{ ref('stg_facebook_cab_meta') }}
+    FROM {{ ref('stg_facebook_cab_sheets') }}
+    --{{ ref('stg_facebook_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
 ),
@@ -373,7 +374,8 @@ asa_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM {{ ref('int_asa_cab_meta') }}
+    FROM {{ ref('stg_asa_cab_sheets') }}
+    --{{ ref('int_asa_cab_meta') }}
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
 ),

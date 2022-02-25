@@ -9,8 +9,6 @@ models:
 
       - name: date
         description: ""
-        tests: 
-            - freshness
 
       - name: campaign_name
         description: ""
@@ -458,3 +456,17 @@ models:
 
       - name: spend
         description: ""
+  
+  - name: stg_asa_cab_sheets
+    description: ""
+    columns:
+      - name: date
+        tests:
+            - freshness
+
+  - name: stg_facebook_cab_sheets
+    description: ""
+    columns:
+      - name: date
+        tests:
+            - freshness

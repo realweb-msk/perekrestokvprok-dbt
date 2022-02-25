@@ -1,4 +1,8 @@
-/* 
+
+
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_ret`
+  OPTIONS()
+  as /* 
 для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
 или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ret
 */
@@ -2792,4 +2796,5 @@ SELECT
           WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), r'reg2|rostov|kzn|g_all')THEN 'Регионы без доставки'
         ELSE 'Россия' END
  AS geo
-FROM final
+FROM final;
+
