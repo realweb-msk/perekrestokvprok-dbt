@@ -5,6 +5,9 @@ sources:
   - name: sheets_data
     database: perekrestokvprok-bq
     tables:
+      - name: limits_sheet
+        description: таблица с лимитами по партнерам (https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=417840891)
+
       - name: TIKTOK_table
         description: таблица с данными из РК Тиктока (c 01.10.2021). Обновляется 1 раз в месяц.
       

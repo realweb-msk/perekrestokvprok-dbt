@@ -46,7 +46,7 @@ SELECT DISTINCT
     unique_key,
     date,
     {{ normalize('campaign_name') }} AS campaign_name,
-    IF(REGEXP_CONTAINS(campaign_name, r'\(R\)'),'retargeting','UA') AS campaign_type,
+    IF(REGEXP_CONTAINS(campaign_name, r'\(R\)|\(r\)'),'retargeting','UA') AS campaign_type,
     '-' adset_name,
     clicks,
     spend,

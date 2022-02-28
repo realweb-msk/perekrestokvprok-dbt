@@ -2344,10 +2344,30 @@ FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 WHERE type = 'UA'
 ),
 
-inapp_convs AS (
+limits_table AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        limits
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    WHERE type = 'UA'
+),
+
+inapp_convs_without_cumulation AS (
     SELECT 
         date,
         campaign_name,
+        
+    CASE 
+        WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_abc_|_sf_') THEN 'Mediasurfer'
+    ELSE '-' END
+ AS partner,
         platform,
         promo_type,
         geo,
@@ -2363,7 +2383,53 @@ inapp_convs AS (
     FROM af_conversions
     WHERE REGEXP_CONTAINS(campaign_name, r'inapp')
     AND is_retargeting = FALSE
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6,7,8
+),
+
+inapp_convs_with_cumulation AS (
+    SELECT
+        date,
+        campaign_name,
+        partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        SUM(first_purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
+            AS cum_event_count_by_prt
+    FROM inapp_convs_without_cumulation
+),
+
+inapp_convs AS (
+    SELECT
+        date,
+        campaign_name,
+        inapp_convs_with_cumulation.partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase_revenue, 0) AS first_purchase_revenue,
+        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase, 0) AS first_purchase,
+        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), uniq_first_purchase, 0) AS uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+    FROM inapp_convs_with_cumulation
+    LEFT JOIN limits_table
+    ON inapp_convs_with_cumulation.partner = limits_table.partner 
+    AND inapp_convs_with_cumulation.date BETWEEN limits_table.start_date AND limits_table.end_date
 ),
 
 inapp AS (
@@ -2389,16 +2455,7 @@ inapp AS (
         'inapp' AS adv_type
     FROM inapp_convs
     LEFT JOIN rate
-    ON 
-    CASE 
-        WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_abc_|_sf_') THEN 'Mediasurfer'
-    ELSE '-' END
- = rate.partner 
+    ON inapp_convs.partner = rate.partner 
     AND inapp_convs.date BETWEEN rate.start_date AND rate.end_date
     AND inapp_convs.platform = rate.platform 
     WHERE 

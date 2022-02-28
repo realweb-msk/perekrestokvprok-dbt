@@ -2688,7 +2688,17 @@ FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 WHERE type = 'RTG'
 ),
 
-inapp_events AS (
+limits_table AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        limits
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    WHERE type = 'RTG'
+),
+
+inapp_events_without_cumulation AS (
     SELECT DISTINCT
         date,
         campaign_name,
@@ -2717,6 +2727,25 @@ inapp_events AS (
         AND is_retargeting = TRUE
 ),
 
+inapp_events AS (
+    SELECT
+        date,
+        campaign_name,
+        platform,
+        partner,
+        promo_type,
+        promo_search,
+        auditory,
+        event_name,
+        event_revenue,
+        event_count,
+        cum_event_count,
+        SUM(event_count) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), event_name, partner ORDER BY date, event_revenue)
+            AS cum_event_count_by_prt
+    FROM inapp_events_without_cumulation
+),
+
 inapp AS (
     SELECT
         date,
@@ -2726,8 +2755,8 @@ inapp AS (
         promo_search,
         auditory,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase" and cum_event_count_by_prt <= COALESCE(limits, 1000000), event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase" and cum_event_count_by_prt <= COALESCE(limits, 1000000), event_count, 0)) AS purchase,
         SUM(
             CASE
                 WHEN event_name = 'af_purchase' 
@@ -2738,6 +2767,7 @@ inapp AS (
                     AND cum_event_count < 3000 THEN event_count * rate_for_us
                 WHEN event_name = 'af_purchase' 
                     AND date NOT BETWEEN '2021-10-01' AND '2021-10-31'
+                    AND cum_event_count_by_prt <= COALESCE(limits, 1000000)
                     THEN event_count * rate_for_us
                 ELSE 0 END
             ) AS spend,
@@ -2746,7 +2776,10 @@ inapp AS (
     LEFT JOIN rate
     ON inapp_events.partner = rate.partner 
     AND inapp_events.date BETWEEN rate.start_date AND rate.end_date
-    AND inapp_events.platform = rate.platform 
+    AND inapp_events.platform = rate.platform
+    LEFT JOIN limits_table
+    ON inapp_events.partner = limits_table.partner 
+    AND inapp_events.date BETWEEN limits_table.start_date AND limits_table.end_date
     GROUP BY 1,2,3,4,5,6
 ),
 
