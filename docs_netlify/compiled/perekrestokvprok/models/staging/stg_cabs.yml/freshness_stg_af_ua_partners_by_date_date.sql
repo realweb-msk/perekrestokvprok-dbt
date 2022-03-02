@@ -5,13 +5,13 @@
     WITH source AS (
     SELECT
         DATE(MAX(date)) AS max_date
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_dbm`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_af_ua_partners_by_date`
     ),
 
     mistakes AS (
         SELECT max_date
         FROM source
-        WHERE max_date < DATE_SUB(CURRENT_DATE(), INTERVAL 2 DAY)
+        WHERE max_date < DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
     )
 
     SELECT *    
