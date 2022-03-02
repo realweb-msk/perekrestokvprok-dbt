@@ -416,7 +416,7 @@ models:
         description: ""
         tests: 
             - freshness:
-              severity: "warn"
+                severity: "warn"
 
       - name: campaign_name
         description: ""

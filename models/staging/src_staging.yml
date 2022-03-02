@@ -118,6 +118,12 @@ sources:
     tables:
       - name: af_atr_data_for_media_ads_TABLE
         description: LTV-события из апсфлайера
+
+      - name: ua_partners_by_date_report_*
+        description: LTV-агрегированные отчеты из апсфлайера (ЮА)
+
+      - name: rtg_partners_by_date_report_*
+        description: LTV-агрегированные отчеты из апсфлайера (РТГ)
   
   - name: test2
     database: perekrestokvprok-bq
