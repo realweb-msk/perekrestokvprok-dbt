@@ -181,8 +181,6 @@ models:
 
       - name: date
         description: ""
-        tests: 
-            - freshness
 
       - name: campaign_name
         description: ""
