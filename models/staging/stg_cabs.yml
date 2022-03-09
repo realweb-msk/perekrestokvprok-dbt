@@ -31,7 +31,8 @@ models:
       - name: date
         description: ""
         tests: 
-            - freshness
+            - freshness:
+                severity: "warn"
 
       - name: campaign_name
         description: ""
@@ -441,7 +442,8 @@ models:
       - name: date
         description: ""
         tests: 
-            - freshness
+            - freshness:
+                severity: "warn"
 
       - name: campaign_name
         description: ""
@@ -474,7 +476,8 @@ models:
     columns:
       - name: date
         tests:
-            - freshness
+            - freshness:
+                severity: "warn"
 
   - name: stg_af_ua_partners_by_date
     description: ""
