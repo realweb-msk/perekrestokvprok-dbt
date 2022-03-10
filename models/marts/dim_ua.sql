@@ -38,7 +38,7 @@ facebook AS (
         {{ promo_search('campaign_name', 'adset_name', 'ad_name') }} as promo_search,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
-        SUM(installs) AS installs,
+        SUM(IF(campaign_type = 'UA', installs, 0)) AS installs,
         SUM(revenue) AS revenue,
         SUM(purchase) AS purchase,
         SUM(purchase) AS uniq_purchase,
