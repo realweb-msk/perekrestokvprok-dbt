@@ -2328,7 +2328,6 @@ huawei AS (
         COALESCE(uniq_first_purchase,0) +
         COALESCE(spend,0) > 0
     AND COALESCE(huawei_convs.campaign_name, huawei_cost.campaign_name) != 'None'
-    AND huawei_cost.date != '2010-12-31'
 ),
 
 ----------------------inapp----------------------------
@@ -2486,6 +2485,7 @@ unions AS (
     SELECT * FROM google
     UNION ALL
     SELECT * FROM huawei
+    WHERE date != '2010-12-31'
     UNION ALL
     SELECT * FROM inapp
 ),

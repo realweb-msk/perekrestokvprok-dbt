@@ -1,33 +1,33 @@
 /* 
 для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
-или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ua
+или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ua_agg
 */
 
 
 WITH af_conversions AS (
     SELECT
         date,
-        is_retargeting,
-        af_cid,
-        --adset_name,
-        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
-        {{ geo('campaign_name', 'adset_name') }} AS geo,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
-        mediasource,
+        media_source AS mediasource,
+        campaign_name,
+        report_type AS campaign_type,
         platform,
-        event_name,
-        uniq_event_count,
-        event_revenue,
-        event_count,
-        campaign_name
-    FROM  {{ ref('stg_af_client_data') }}
-    -- WHERE is_retargeting = FALSE
-    -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
+        {{ promo_type('campaign_name') }} as promo_type,
+        {{ geo('campaign_name') }} AS geo,
+        impressions,
+        clicks,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
+    FROM  {{ ref('stg_af_ua_partners_by_date') }}
 ),
 
 ----------------------- facebook -------------------------
 
-facebook AS (
+facebook_cost AS (
     SELECT
         date,
         campaign_name,
@@ -35,22 +35,70 @@ facebook AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name', 'ad_name') }} as promo_search,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
-        SUM(IF(campaign_type = 'UA', installs, 0)) AS installs,
-        SUM(revenue) AS revenue,
-        SUM(purchase) AS purchase,
-        SUM(purchase) AS uniq_purchase,
-        SUM(first_purchase_revenue) AS first_purchase_revenue,
-        SUM(first_purchase) AS first_purchase,
-        SUM(first_purchase) AS uniq_first_purchase,
-        SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
-        'Facebook' AS source,
-        "social" as adv_type
+        SUM(spend) AS spend
     FROM {{ ref('stg_facebook_cab_sheets') }}
     --{{ ref('stg_facebook_cab_meta') }}
-    GROUP BY 1,2,3,4,5,6,7
+    WHERE campaign_type = 'UA'
+    GROUP BY 1,2,3,4,5,6
+),
+
+facebook_convs AS (
+    SELECT
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
+    FROM af_conversions
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_fb')
+),
+
+facebook AS (
+    SELECT
+        COALESCE(facebook_convs.date, facebook_cost.date) AS date,
+        COALESCE(facebook_convs.campaign_name, facebook_cost.campaign_name) AS campaign_name,
+        COALESCE(facebook_convs.platform, facebook_cost.platform) AS platform,
+        COALESCE(facebook_convs.promo_type, facebook_cost.promo_type) AS promo_type,
+        COALESCE(facebook_convs.geo, facebook_cost.geo) AS geo,
+        COALESCE(facebook_convs.campaign_type, facebook_cost.campaign_type) AS campaign_type,
+        COALESCE(impressions,0) AS impressions,
+        COALESCE(clicks,0) AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(spend,0) AS spend,
+        'Facebook' AS source,
+        'social' AS adv_type
+    FROM facebook_convs
+    FULL OUTER JOIN facebook_cost
+    ON facebook_convs.date = facebook_cost.date 
+    AND facebook_convs.campaign_name = facebook_cost.campaign_name
+    AND facebook_convs.promo_type = facebook_cost.promo_type
+    AND facebook_convs.geo = facebook_cost.geo
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(spend,0) > 0
+    AND COALESCE(facebook_convs.campaign_name, facebook_cost.campaign_name) != 'None'
 ),
 
 ----------------------- yandex -------------------------
@@ -63,67 +111,33 @@ yandex_cost AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
     FROM {{ ref('int_yandex_cab_meta') }}
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4,5,6,7
-),
-
-yandex_convs_ua AS (
-    SELECT 
-        date,
-        campaign_name,
-        platform,
-        promo_type,
-        geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-    FROM af_conversions
-    WHERE is_retargeting = FALSE
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_ya')
-    AND NOT REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4,5,6,7
-),
-
-yandex_convs_rtg AS (
-    SELECT 
-        date,
-        campaign_name,
-        platform,
-        promo_type,
-        geo,
-        'retargeting' AS campaign_type,
-        promo_search,
-        -- информация по покупкам в рет кампаниях должна быть в дашборде UA
-        SUM(IF(event_name = 'install', 0,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-    FROM af_conversions
-    WHERE is_retargeting = TRUE --? 
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_ya')
-    AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 yandex_convs AS (
-    SELECT * FROM yandex_convs_ua
-    UNION ALL 
-    SELECT * FROM yandex_convs_rtg
+    SELECT
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
+    FROM af_conversions
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_ya')
+    --AND NOT REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
 ),
 
 yandex AS (
@@ -134,7 +148,6 @@ yandex AS (
         COALESCE(yandex_convs.promo_type, yandex_cost.promo_type) AS promo_type,
         COALESCE(yandex_convs.geo, yandex_cost.geo) AS geo,
         COALESCE(yandex_convs.campaign_type, yandex_cost.campaign_type) AS campaign_type,
-        COALESCE(yandex_convs.promo_search, yandex_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(installs,0) AS installs,
@@ -153,7 +166,6 @@ yandex AS (
     AND yandex_convs.campaign_name = yandex_cost.campaign_name
     AND yandex_convs.promo_type = yandex_cost.promo_type
     AND yandex_convs.geo = yandex_cost.geo
-    AND yandex_convs.promo_search = yandex_cost.promo_search
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -176,14 +188,13 @@ mt_cost AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
     FROM {{ ref('int_mytarget_cab_meta') }}
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 mt_convs AS (
@@ -193,20 +204,17 @@ mt_convs AS (
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
-    WHERE is_retargeting = FALSE
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_mt')
-    AND REGEXP_CONTAINS(campaign_name, r'new')
-    GROUP BY 1,2,3,4,5,6,7
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_mt')
+    --AND REGEXP_CONTAINS(campaign_name, r'new')
 ),
 
 mt AS (
@@ -217,7 +225,6 @@ mt AS (
         COALESCE(mt_convs.promo_type, mt_cost.promo_type) AS promo_type,
         COALESCE(mt_convs.geo, mt_cost.geo) AS geo,
         COALESCE(mt_convs.campaign_type, mt_cost.campaign_type) AS campaign_type,
-        COALESCE(mt_convs.promo_search, mt_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(installs,0) AS installs,
@@ -236,7 +243,6 @@ mt AS (
     AND mt_convs.campaign_name = mt_cost.campaign_name
     AND mt_convs.promo_type = mt_cost.promo_type
     AND mt_convs.geo = mt_cost.geo
-    AND mt_convs.promo_search = mt_cost.promo_search
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -259,39 +265,34 @@ tiktok_cost AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
-        -- информация по покупкам в рет кампаниях должна быть в дашборде UA
         SUM(IF(campaign_type = 'UA',impressions,0)) AS impressions,
         SUM(IF(campaign_type = 'UA',clicks,0)) AS clicks,
         SUM(IF(campaign_type = 'UA',spend,0)) AS spend,
-        SUM(purchase) AS purchase,
-        SUM(first_purchase) AS first_purchase
+        --SUM(purchase) AS purchase,
+        --SUM(first_purchase) AS first_purchase
     FROM {{ ref('stg_tiktok_cab_meta') }}
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 tiktok_convs AS (
-    SELECT  
+    SELECT 
         date,
         campaign_name,
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        --SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        --SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
-    WHERE is_retargeting = FALSE
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_tiktok')
-    AND NOT REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
-    GROUP BY 1,2,3,4,5,6,7
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_tiktok')
+    --AND NOT REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
 ),
 
 tiktok AS (
@@ -302,7 +303,6 @@ tiktok AS (
         COALESCE(tiktok_convs.promo_type, tiktok_cost.promo_type) AS promo_type,
         COALESCE(tiktok_convs.geo, tiktok_cost.geo) AS geo,
         COALESCE(tiktok_convs.campaign_type, tiktok_cost.campaign_type) AS campaign_type,
-        COALESCE(tiktok_convs.promo_search, tiktok_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(installs,0) AS installs,
@@ -321,7 +321,6 @@ tiktok AS (
     AND tiktok_convs.campaign_name = tiktok_cost.campaign_name
     AND tiktok_convs.promo_type = tiktok_cost.promo_type
     AND tiktok_convs.geo = tiktok_cost.geo
-    AND tiktok_convs.promo_search = tiktok_cost.promo_search
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -344,7 +343,6 @@ asa_cost AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         SUM(meta.impressions) AS impressions,
         SUM(sheet.clicks) AS clicks,
         SUM(sheet.spend) AS spend
@@ -353,7 +351,7 @@ asa_cost AS (
     LEFT JOIN {{ ref('int_asa_cab_meta') }} meta
     USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'UA'
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 asa_convs AS (
@@ -363,23 +361,20 @@ asa_convs AS (
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
     WHERE NOT REGEXP_CONTAINS(campaign_name, r'\(r\)')
     AND (
         REGEXP_CONTAINS(campaign_name, r'\(exact\)|зоо') OR
         mediasource = 'Apple Search Ads'
     )
-    AND is_retargeting = FALSE
-    GROUP BY 1,2,3,4,5,6,7
 ),
 
 asa AS (
@@ -390,7 +385,6 @@ asa AS (
         COALESCE(asa_convs.promo_type, asa_cost.promo_type) AS promo_type,
         COALESCE(asa_convs.geo, asa_cost.geo) AS geo,
         COALESCE(asa_convs.campaign_type, asa_cost.campaign_type) AS campaign_type,
-        COALESCE(asa_convs.promo_search, asa_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(installs,0) AS installs,
@@ -409,7 +403,6 @@ asa AS (
     AND asa_convs.campaign_name = asa_cost.campaign_name
     AND asa_convs.promo_type = asa_cost.promo_type
     AND asa_convs.geo = asa_cost.geo
-    AND asa_convs.promo_search = asa_cost.promo_search
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -432,7 +425,6 @@ google_cost AS (
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
         campaign_type,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend,
@@ -443,7 +435,7 @@ google_cost AS (
     AND campaign_name NOT IN (
             'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
             'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 google_convs AS (
@@ -453,22 +445,19 @@ google_convs AS (
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
-    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_uac_')
-    AND is_retargeting = FALSE
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_uac')
     AND campaign_name NOT IN (
             'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
             'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
-    GROUP BY 1,2,3,4,5,6,7
 ),
 
 google AS (
@@ -479,7 +468,6 @@ google AS (
         COALESCE(google_convs.promo_type, google_cost.promo_type) AS promo_type,
         COALESCE(google_convs.geo, google_cost.geo) AS geo,
         COALESCE(google_convs.campaign_type, google_cost.campaign_type) AS campaign_type,
-        COALESCE(google_convs.promo_search, google_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(google_cost.installs,google_convs.installs,0) AS installs,
@@ -498,7 +486,6 @@ google AS (
     AND google_convs.campaign_name = google_cost.campaign_name
     AND google_convs.promo_type = google_cost.promo_type
     AND google_convs.geo = google_cost.geo
-    AND google_convs.promo_search = google_cost.promo_search
     WHERE 
         COALESCE(google_cost.installs,google_convs.installs,0) + 
         COALESCE(revenue,0) + 
@@ -521,7 +508,6 @@ huawei_cost AS (
         {{ platform('campaign_name') }} as platform,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ geo('campaign_name', 'adset_name') }} AS geo,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
         campaign_type,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
@@ -529,7 +515,7 @@ huawei_cost AS (
     FROM {{ ref('int_mytarget_cab_meta') }}
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6
 ),
 
 huawei_convs AS (
@@ -539,20 +525,16 @@ huawei_convs AS (
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
-    WHERE is_retargeting = FALSE
-    AND REGEXP_CONTAINS(campaign_name, r'realweb_hw')
-    AND REGEXP_CONTAINS(campaign_name, r'new')
-    GROUP BY 1,2,3,4,5,6,7
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_hw')
 ),
 
 huawei AS (
@@ -563,7 +545,6 @@ huawei AS (
         COALESCE(huawei_convs.promo_type, huawei_cost.promo_type) AS promo_type,
         COALESCE(huawei_convs.geo, huawei_cost.geo) AS geo,
         COALESCE(huawei_convs.campaign_type, huawei_cost.campaign_type) AS campaign_type,
-        COALESCE(huawei_convs.promo_search, huawei_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
         COALESCE(installs,0) AS installs,
@@ -582,7 +563,6 @@ huawei AS (
     AND huawei_convs.campaign_name = huawei_cost.campaign_name
     AND huawei_convs.promo_type = huawei_cost.promo_type
     AND huawei_convs.geo = huawei_cost.geo
-    AND huawei_convs.promo_search = huawei_cost.promo_search
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -626,19 +606,16 @@ inapp_convs_without_cumulation AS (
         platform,
         promo_type,
         geo,
-        'UA' as campaign_type,
-        promo_search,
-        SUM(IF(event_name = 'install', event_count,0)) AS installs,
-        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
-        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
-        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
-        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+        campaign_type,
+        installs,
+        uniq_purchase,
+        purchase,
+        revenue,
+        uniq_first_purchase,
+        first_purchase,
+        first_purchase_revenue
     FROM af_conversions
-    WHERE REGEXP_CONTAINS(campaign_name, r'inapp')
-    AND is_retargeting = FALSE
-    GROUP BY 1,2,3,4,5,6,7,8
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
 ),
 
 inapp_convs_with_cumulation AS (
@@ -650,7 +627,6 @@ inapp_convs_with_cumulation AS (
         promo_type,
         geo,
         campaign_type,
-        promo_search,
         installs,
         first_purchase_revenue,
         first_purchase,
@@ -673,7 +649,6 @@ inapp_convs AS (
         promo_type,
         geo,
         campaign_type,
-        promo_search,
         installs,
         IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase_revenue, 0) AS first_purchase_revenue,
         IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase, 0) AS first_purchase,
@@ -695,7 +670,6 @@ inapp AS (
         promo_type,
         geo,
         campaign_type,
-        promo_search,
         0 AS impressions,
         0 AS clicks,
         COALESCE(installs,0) AS installs,
@@ -754,7 +728,6 @@ final AS (
         promo_type,
         geo,
         campaign_type,
-        promo_search,
         impressions,
         clicks,
         installs,
@@ -778,7 +751,6 @@ SELECT
     promo_type,
     geo,
     campaign_type,
-    promo_search,
     impressions,
     clicks,
     installs,
