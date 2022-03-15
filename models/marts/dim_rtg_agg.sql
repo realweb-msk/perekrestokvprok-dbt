@@ -175,9 +175,7 @@ vk_convs AS (
         purchase,
         re_engagement
     FROM af_conversions
-    WHERE mediasource ='vk_int'
-    AND REGEXP_CONTAINS(campaign_name, r'realweb')
-    --AND REGEXP_CONTAINS(campaign_name, r'_ret_|[_\[]old[_\]]')
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_vk')
 ),
 
 vk AS (
@@ -341,7 +339,7 @@ asa_cost AS (
     SELECT
         date,
         campaign_name,
-        {{ platform('campaign_name') }} as platform,
+        'ios' as platform,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ aud('campaign_name', 'adset_name') }} AS auditory,
         campaign_type,
@@ -367,8 +365,9 @@ asa_convs AS (
         purchase,
         re_engagement
     FROM af_conversions
-    WHERE REGEXP_CONTAINS(campaign_name, r'\(r\)')
-    AND (
+    WHERE 
+    --REGEXP_CONTAINS(campaign_name, r'\(r\)') AND
+    (
         REGEXP_CONTAINS(campaign_name, r'\(exact\)|зоо') OR
         mediasource = 'Apple Search Ads'
     )

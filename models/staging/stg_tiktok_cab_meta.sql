@@ -4,6 +4,7 @@
   config(
     materialized='incremental',
     unique_key='unique_key',
+    on_schema_change='append_new_columns',
     partition_by={
       "field": "date",
       "data_type": "date",
@@ -25,7 +26,8 @@ WITH source AS (
         spend,
         clicks,
         total_purchase,
-        total_achieve_level
+        total_achieve_level,
+        app_install
     FROM {{ source('test2', 'tiktok_perek_settings_6952834783391023106') }}
 ),
 
@@ -45,7 +47,8 @@ final AS (
         spend,
         clicks,
         total_purchase AS purchase,
-        total_achieve_level AS first_purchase
+        total_achieve_level AS first_purchase,
+        app_install
     FROM source
 )
 
@@ -60,7 +63,8 @@ SELECT
     spend,
     clicks,
     purchase,
-    first_purchase
+    first_purchase,
+    app_install
 FROM final
 
 {% if not is_incremental() %}
@@ -82,7 +86,8 @@ SELECT DISTINCT
     cost AS spend,
     0 AS clicks,
     total_purchases AS purchase,
-    total_achieve_level	 AS first_purchase
+    total_achieve_level	 AS first_purchase,
+    0 AS app_install
 FROM {{ source('sheets_data', 'TIKTOK_table') }}
 WHERE date < (
   SELECT MIN(date)

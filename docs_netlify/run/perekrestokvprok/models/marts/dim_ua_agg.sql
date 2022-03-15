@@ -4,7 +4,7 @@
   OPTIONS()
   as /* 
 для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
-или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ua
+или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ua_agg
 */
 
 
@@ -484,8 +484,9 @@ asa_convs AS (
         first_purchase,
         first_purchase_revenue
     FROM af_conversions
-    WHERE NOT REGEXP_CONTAINS(campaign_name, r'\(r\)')
-    AND (
+    WHERE 
+    --NOT REGEXP_CONTAINS(campaign_name, r'\(r\)') AND 
+    (
         REGEXP_CONTAINS(campaign_name, r'\(exact\)|зоо') OR
         mediasource = 'Apple Search Ads'
     )
@@ -594,9 +595,9 @@ google_convs AS (
         first_purchase_revenue
     FROM af_conversions
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb_uac')
-    AND campaign_name NOT IN (
-            'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
-            'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
+    --AND campaign_name NOT IN (
+    --        'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
+    --        'realweb_uac_2022 [p:and] [cpi] [reg1] [new] [general] [darkstore] [purchase] [firebase]')
 ),
 
 google AS (

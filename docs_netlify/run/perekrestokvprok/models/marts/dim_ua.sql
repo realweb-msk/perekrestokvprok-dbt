@@ -1349,7 +1349,8 @@ tiktok_cost AS (
         SUM(IF(campaign_type = 'UA',clicks,0)) AS clicks,
         SUM(IF(campaign_type = 'UA',spend,0)) AS spend,
         SUM(purchase) AS purchase,
-        SUM(first_purchase) AS first_purchase
+        SUM(first_purchase) AS first_purchase,
+        SUM(SAFE_CAST(app_install AS INT64)) AS app_install
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_tiktok_cab_meta`
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
@@ -1389,7 +1390,7 @@ tiktok AS (
         COALESCE(tiktok_convs.promo_search, tiktok_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
-        COALESCE(installs,0) AS installs,
+        COALESCE(app_install, installs,0) AS installs,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
         COALESCE(uniq_purchase,0) AS uniq_purchase,

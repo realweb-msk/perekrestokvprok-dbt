@@ -14,7 +14,8 @@ WITH source AS (
         spend,
         clicks,
         total_purchase,
-        total_achieve_level
+        total_achieve_level,
+        app_install
     FROM `perekrestokvprok-bq`.`test2`.`tiktok_perek_settings_6952834783391023106`
 ),
 
@@ -34,7 +35,8 @@ final AS (
         spend,
         clicks,
         total_purchase AS purchase,
-        total_achieve_level AS first_purchase
+        total_achieve_level AS first_purchase,
+        app_install
     FROM source
 )
 
@@ -49,6 +51,7 @@ SELECT
     spend,
     clicks,
     purchase,
-    first_purchase
+    first_purchase,
+    app_install
 FROM final
 
