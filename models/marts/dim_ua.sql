@@ -306,7 +306,7 @@ tiktok AS (
         COALESCE(tiktok_convs.promo_search, tiktok_cost.promo_search) AS promo_search,
         COALESCE(impressions,0) AS impressions,
         COALESCE(clicks,0) AS clicks,
-        COALESCE(app_install, installs,0) AS installs,
+        COALESCE(installs, app_install, 0) AS installs,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
         COALESCE(uniq_purchase,0) AS uniq_purchase,
