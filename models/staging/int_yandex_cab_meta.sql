@@ -14,7 +14,7 @@ final AS (
     SELECT
         date,
         LOWER(REPLACE(REPLACE(CampaignName,'+','_'),'-','_')) AS campaign_name,
-        IF(REGEXP_CONTAINS(CampaignName, r'_ret_'),'retargeting','UA') AS campaign_type,
+        IF(REGEXP_CONTAINS(CampaignName, r'ret'),'retargeting','UA') AS campaign_type,
         AdGroupName AS adset_name,
         SUM(Impressions) AS impressions,
         SUM(Clicks) AS clicks,
