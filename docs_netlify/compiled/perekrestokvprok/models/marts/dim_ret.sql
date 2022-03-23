@@ -2723,7 +2723,7 @@ inapp_events_without_cumulation AS (
             OVER(PARTITION BY DATE_TRUNC(date, MONTH), event_name ORDER BY date, event_revenue)
             AS cum_event_count
         FROM af_conversions
-        WHERE REGEXP_CONTAINS(campaign_name, r'inapp')
+        WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
         AND is_retargeting = TRUE
 ),
 

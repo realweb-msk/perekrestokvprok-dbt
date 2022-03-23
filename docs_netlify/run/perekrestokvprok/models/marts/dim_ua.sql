@@ -2381,7 +2381,7 @@ inapp_convs_without_cumulation AS (
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
     FROM af_conversions
-    WHERE REGEXP_CONTAINS(campaign_name, r'inapp')
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
     AND is_retargeting = FALSE
     GROUP BY 1,2,3,4,5,6,7,8
 ),
