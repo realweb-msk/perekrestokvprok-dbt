@@ -4,5 +4,6 @@
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'[\[_]cpa[\]_]') THEN 'CPA'
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'[\[_]cpc[\]_]') THEN 'CPC'
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'[\[_]cpm[\]_]') THEN 'CPM'
+        WHEN REGEXP_CONTAINS({{campaign_name}}, r'[\[_]cpo[\]_]') THEN 'CPO'
     ELSE 'Не определено' END
 {% endmacro %}
