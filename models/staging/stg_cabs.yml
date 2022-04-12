@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_twitter_cab_sheets
-    description: ""
+    description: "Твиттер из perek_settings"
     columns:
       - name: unique_key
         description: ""
@@ -23,7 +23,7 @@ models:
         description: ""
 
   - name: stg_tiktok_cab_meta
-    description: ""
+    description: "Тикток из меты"
     columns:
       - name: unique_key
         description: ""
@@ -62,7 +62,7 @@ models:
         description: ""
 
   - name: stg_google_dbm
-    description: ""
+    description: "Гугл из меты для медиа"
     columns:
       - name: date
         description: ""
@@ -114,7 +114,7 @@ models:
         description: ""
 
   - name: stg_google_cab_sheets
-    description: ""
+    description: "Гугл из perek_settings"
     columns:
       - name: unique_key
         description: ""
@@ -143,7 +143,7 @@ models:
         description: ""
 
   - name: stg_af_for_media
-    description: ""
+    description: "AF для медийки из BQ"
     columns:
       - name: date
         description: ""
@@ -175,7 +175,7 @@ models:
         description: ""
 
   - name: stg_facebook_cab_meta
-    description: ""
+    description: "Фейсбук из меты. Не сошелся, не юзаем"
     columns:
       - name: unique_key
         description: ""
@@ -223,7 +223,7 @@ models:
         description: ""
 
   - name: stg_af_client_data
-    description: ""
+    description: "AF из BQ (главный сурс конверсий)"
     columns:
       - name: date
         description: ""
@@ -264,7 +264,7 @@ models:
         description: ""
 
   - name: int_yandex_cab_meta
-    description: ""
+    description: "Яндекс из меты"
     columns:
       - name: date
         description: ""
@@ -290,7 +290,7 @@ models:
         description: ""
 
   - name: int_vk_cab_meta
-    description: ""
+    description: "ВК из меты"
     columns:
       - name: date
         description: ""
@@ -316,7 +316,7 @@ models:
         description: ""
 
   - name: int_mytarget_cab_meta
-    description: ""
+    description: "МТ из меты"
     columns:
       - name: date
         description: ""
@@ -342,7 +342,7 @@ models:
         description: ""
 
   - name: int_google_dcm_reach
-    description: ""
+    description: "Гугл из меты для медиа"
     columns:
       - name: date
         description: ""
@@ -361,7 +361,7 @@ models:
         description: ""
 
   - name: int_google_dcm_activity_meta
-    description: ""
+    description: "Гугл из меты для медиа"
     columns:
       - name: interaction_date
         description: ""
@@ -385,7 +385,7 @@ models:
         description: ""
 
   - name: int_google_dbm_impressions_clicks_revenue_meta
-    description: ""
+    description: "Гугл из меты для медиа"
     columns:
       - name: date
         description: ""
@@ -410,7 +410,7 @@ models:
         description: ""
 
   - name: int_google_dbm_dv360_cost
-    description: ""
+    description: "Гугл из меты для медиа"
     columns:
       - name: date
         description: ""
@@ -437,7 +437,7 @@ models:
         description: ""
 
   - name: int_asa_cab_meta
-    description: ""
+    description: "АСА из меты"
     columns:
       - name: date
         description: ""
@@ -464,7 +464,7 @@ models:
         description: ""
   
   - name: stg_asa_cab_sheets
-    description: ""
+    description: "АСА из perek_settings"
     columns:
       - name: date
         tests:
@@ -472,7 +472,7 @@ models:
                 severity: "warn"
 
   - name: stg_facebook_cab_sheets
-    description: ""
+    description: "ФБ из perek_settings"
     columns:
       - name: date
         tests:
@@ -480,11 +480,18 @@ models:
                 severity: "warn"
 
   - name: stg_af_ua_partners_by_date
-    description: ""
+    description: "Выгрузка агрегатов напрямую из AF"
     columns:
       - name: date
 
   - name: stg_af_rtg_partners_by_date
-    description: ""
+    description: "Выгрузка агрегатов напрямую из AF"
     columns:
       - name: date
+      
+  - name: stg_huawei_cab_sheets
+    description: "Huawei из perek_settings"
+    columns:
+      - name: date
+        tests:
+            - freshness

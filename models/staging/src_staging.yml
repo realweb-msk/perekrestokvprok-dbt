@@ -56,6 +56,9 @@ sources:
       - name: Asa_cost
         description: ASA из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1016604704 
 
+      - name: huawei_data
+        description: Huawei из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=646019346 
+
   - name: MetaCustom
     database: perekrestokvprok-bq
     tables:

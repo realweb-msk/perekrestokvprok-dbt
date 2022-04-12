@@ -515,21 +515,20 @@ google AS (
 ----------------------- huawei -------------------------
 
 huawei_cost AS (
-    ---- TODO: поменять на источник костов -----
     SELECT
-        DATE('2010-12-31') date,
+        date,
         campaign_name,
         {{ platform('campaign_name') }} as platform,
-        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
-        {{ geo('campaign_name', 'adset_name') }} AS geo,
-        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
+        {{ promo_type('campaign_name') }} as promo_type,
+        {{ geo('campaign_name') }} AS geo,
+        {{ promo_search('campaign_name') }} as promo_search,
         campaign_type,
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM {{ ref('int_mytarget_cab_meta') }}
+    FROM {{ ref('stg_huawei_cab_sheets') }}
     WHERE campaign_type = 'UA'
-    AND REGEXP_CONTAINS(campaign_name, r'realweb')
+    AND status != "Deleted"
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -742,7 +741,6 @@ unions AS (
     SELECT * FROM google
     UNION ALL
     SELECT * FROM huawei
-    WHERE date != '2010-12-31'
     UNION ALL
     SELECT * FROM inapp
 ),
