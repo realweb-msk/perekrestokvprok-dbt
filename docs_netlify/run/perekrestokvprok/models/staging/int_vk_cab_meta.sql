@@ -1,11 +1,15 @@
-WITH source_1 AS (
+
+
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
+  OPTIONS()
+  as WITH source_1 AS (
     SELECT
         day,
         campaign.name,
         impressions,
         clicks,
         spent
-    FROM {{ source('MetaCustom', 'vk_campaign_stat_1900013586_1605495720') }}
+    FROM `perekrestokvprok-bq`.`MetaCustom`.`vk_campaign_stat_1900013586_1605495720`
 ),
 
 source_2 AS (
@@ -15,7 +19,7 @@ source_2 AS (
         impressions,
         clicks,
         spent
-    FROM {{ source('MetaCustom', 'vk_campaign_stat_1900013586_1607141417') }}
+    FROM `perekrestokvprok-bq`.`MetaCustom`.`vk_campaign_stat_1900013586_1607141417`
 ),
 
 unions AS (
@@ -46,4 +50,5 @@ SELECT
     impressions,
     clicks,
     spend
-FROM final
+FROM final;
+

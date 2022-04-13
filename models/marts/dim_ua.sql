@@ -595,6 +595,88 @@ huawei AS (
     AND COALESCE(huawei_convs.campaign_name, huawei_cost.campaign_name) != 'None'
 ),
 
+----------------------- vk -------------------------
+
+vk_cost AS (
+    SELECT
+        date,
+        campaign_name,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_type('campaign_name') }} as promo_type,
+        {{ geo('campaign_name') }} AS geo,
+        {{ promo_search('campaign_name') }} as promo_search,
+        campaign_type,
+        SUM(impressions) AS impressions,
+        SUM(clicks) AS clicks,
+        SUM(spend) AS spend
+    FROM {{ ref('int_vk_cab_meta') }}
+    WHERE campaign_type = 'UA'
+    GROUP BY 1,2,3,4,5,6,7
+),
+
+vk_convs AS (
+    SELECT 
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE is_retargeting = FALSE
+    AND REGEXP_CONTAINS(campaign_name, r'realweb_vk')
+    AND REGEXP_CONTAINS(campaign_name, r'new')
+    GROUP BY 1,2,3,4,5,6,7
+),
+
+vk AS (
+    SELECT
+        COALESCE(vk_convs.date, vk_cost.date) AS date,
+        COALESCE(vk_convs.campaign_name, vk_cost.campaign_name) AS campaign_name,
+        COALESCE(vk_convs.platform, vk_cost.platform) AS platform,
+        COALESCE(vk_convs.promo_type, vk_cost.promo_type) AS promo_type,
+        COALESCE(vk_convs.geo, vk_cost.geo) AS geo,
+        COALESCE(vk_convs.campaign_type, vk_cost.campaign_type) AS campaign_type,
+        COALESCE(vk_convs.promo_search, vk_cost.promo_search) AS promo_search,
+        COALESCE(impressions,0) AS impressions,
+        COALESCE(clicks,0) AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(spend,0) AS spend,
+        'VK' AS source,
+        'social' AS adv_type
+    FROM vk_convs
+    FULL OUTER JOIN vk_cost
+    ON vk_convs.date = vk_cost.date 
+    AND vk_convs.campaign_name = vk_cost.campaign_name
+    AND vk_convs.promo_type = vk_cost.promo_type
+    AND vk_convs.geo = vk_cost.geo
+    AND vk_convs.promo_search = vk_cost.promo_search
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(spend,0) > 0
+    AND COALESCE(vk_convs.campaign_name, vk_cost.campaign_name) != 'None'
+),
+
 ----------------------inapp----------------------------
 
 rate AS (
@@ -741,6 +823,8 @@ unions AS (
     SELECT * FROM google
     UNION ALL
     SELECT * FROM huawei
+    UNION ALL
+    SELECT * FROM vk
     UNION ALL
     SELECT * FROM inapp
 ),
