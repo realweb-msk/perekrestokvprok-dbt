@@ -2636,6 +2636,7 @@ rate AS (
         rate_for_us
 FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 WHERE type = 'UA'
+AND source = 'inapp'
 ),
 
 limits_table AS (

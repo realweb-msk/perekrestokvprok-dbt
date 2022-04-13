@@ -688,6 +688,7 @@ rate AS (
         rate_for_us
 FROM {{ ref('stg_rate_info') }}
 WHERE type = 'UA'
+AND source = 'inapp'
 ),
 
 limits_table AS (
