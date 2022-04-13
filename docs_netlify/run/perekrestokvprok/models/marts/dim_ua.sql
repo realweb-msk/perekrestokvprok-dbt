@@ -2608,7 +2608,7 @@ vk AS (
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(spend,0) AS spend,
-        'VK' AS source,
+        'ВК' AS source,
         'social' AS adv_type
     FROM vk_convs
     FULL OUTER JOIN vk_cost
