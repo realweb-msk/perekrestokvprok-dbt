@@ -2638,9 +2638,9 @@ rate AS (
         partner,
         platform,
         rate_for_us
-FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
-WHERE type = 'UA'
-AND source = 'inapp'
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    WHERE type = 'UA'
+    AND source = 'inapp'
 ),
 
 limits_table AS (
@@ -2651,6 +2651,7 @@ limits_table AS (
         limits
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
     WHERE type = 'UA'
+    AND source = 'inapp'
 ),
 
 inapp_convs_without_cumulation AS (
@@ -2769,6 +2770,147 @@ inapp AS (
     AND campaign_name != 'None'
 ),
 
+----------------------Xiaomi----------------------------
+
+x_rate AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        platform,
+        rate_for_us
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    WHERE type = 'UA'
+    AND source = 'Xiaomi'
+),
+
+x_limits_table AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        limits
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    WHERE type = 'UA'
+    AND source = 'Xiaomi'
+),
+
+xiaomi_convs_without_cumulation AS (
+    SELECT 
+        date,
+        campaign_name,
+        
+    CASE 
+        WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_abc_|_sf_') THEN 'Mediasurfer'
+    ELSE '-' END
+ AS partner,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_xiaomi')
+    AND is_retargeting = FALSE
+    GROUP BY 1,2,3,4,5,6,7,8
+),
+
+xiaomi_convs_with_cumulation AS (
+    SELECT
+        date,
+        campaign_name,
+        partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        SUM(installs) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, installs)
+            AS cum_event_count_by_prt
+    FROM xiaomi_convs_without_cumulation
+),
+
+xiaomi_convs AS (
+    SELECT
+        date,
+        campaign_name,
+        xiaomi_convs_with_cumulation.partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), installs, 0) AS installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+    FROM xiaomi_convs_with_cumulation
+    LEFT JOIN x_limits_table
+    ON xiaomi_convs_with_cumulation.partner = x_limits_table.partner 
+    AND xiaomi_convs_with_cumulation.date BETWEEN x_limits_table.start_date AND x_limits_table.end_date
+),
+
+xiaomi AS (
+    SELECT
+        date,
+        campaign_name,
+        xiaomi_convs.platform AS platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        0 AS impressions,
+        0 AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(installs * rate_for_us,0)  AS spend,
+        'Xiaomi' AS source,
+        'Xiaomi' AS adv_type
+    FROM xiaomi_convs
+    LEFT JOIN x_rate
+    ON xiaomi_convs.partner = x_rate.partner 
+    AND xiaomi_convs.date BETWEEN x_rate.start_date AND x_rate.end_date
+    AND xiaomi_convs.platform = x_rate.platform 
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(installs * rate_for_us,0) > 0
+    AND campaign_name != 'None'
+),
+
 ----------------------final----------------------------
 
 unions AS (
@@ -2789,6 +2931,8 @@ unions AS (
     SELECT * FROM vk
     UNION ALL
     SELECT * FROM inapp
+    UNION ALL
+    SELECT * FROM xiaomi
 ),
 
 final AS (

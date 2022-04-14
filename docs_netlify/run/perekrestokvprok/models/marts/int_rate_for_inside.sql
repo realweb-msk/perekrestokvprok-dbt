@@ -1,4 +1,8 @@
-WITH source_t AS (
+
+
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_rate_for_inside`
+  OPTIONS()
+  as WITH source_t AS (
     SELECT
         start_date,
         end_date,
@@ -9,7 +13,7 @@ WITH source_t AS (
         plan_f_p,
         type,
         source
-    FROM {{ ref('stg_rate_info') }}
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 ),
 
 rate_array AS (
@@ -69,4 +73,5 @@ SELECT
     prt_budget,
     plan_mrg,
     prt_plan_mrg,
-FROM final
+FROM final;
+
