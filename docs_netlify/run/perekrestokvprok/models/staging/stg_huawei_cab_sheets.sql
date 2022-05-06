@@ -1,15 +1,8 @@
 
 
-  create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_huawei_cab_sheets`
-  partition by date
-  cluster by campaign_type
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_huawei_cab_sheets`
   OPTIONS()
-  as (
-    
-
-
-
-
+  as 
 
 WITH source AS (
     SELECT DISTINCT
@@ -72,6 +65,5 @@ SELECT
     clicks,
     impressions,
     exchange_rate
-FROM final
-  );
-  
+FROM final;
+

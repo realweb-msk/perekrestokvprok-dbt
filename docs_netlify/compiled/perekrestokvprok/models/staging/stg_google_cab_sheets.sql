@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
     SELECT DISTINCT
         date,
@@ -59,5 +55,30 @@ SELECT
     clicks,
     impressions
 FROM final
+
+-- 
+
+-- -- первый раз --
+-- UNION ALL
+-- SELECT DISTINCT
+--     ARRAY_TO_STRING([
+--             CAST(date AS STRING),
+--             LOWER(campaign_name),
+--             adset_name
+--     ],'') AS unique_key,
+--     date,
+--     LOWER(campaign_name) campaign_name,
+--     IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
+--     adset_name,
+--     costs AS spend,
+--     installs,
+--     clicks,
+--     impressions
+-- FROM `perekrestokvprok-bq`.`agg_data`.`google_ads_costs_and_installs_sum`
+-- WHERE date NOT IN  < (
+--   SELECT DISTINCT date
+--   FROM final
+-- )
+-- AND date IS NOT NULL
 
 -- 

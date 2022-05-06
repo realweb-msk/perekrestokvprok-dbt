@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_ua`
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`dim_ua`
   OPTIONS()
   as /* 
 для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
@@ -236,7 +236,7 @@ WITH af_conversions AS (
         event_revenue,
         event_count,
         campaign_name
-    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
+    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
     -- WHERE is_retargeting = FALSE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
 ),
@@ -481,8 +481,8 @@ facebook AS (
         SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
         'Facebook' AS source,
         "social" as adv_type
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets`
-    --`perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -717,7 +717,7 @@ yandex_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_yandex_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_yandex_cab_meta`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
@@ -1047,7 +1047,7 @@ mt_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_mytarget_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_mytarget_cab_meta`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
@@ -1351,7 +1351,7 @@ tiktok_cost AS (
         SUM(purchase) AS purchase,
         SUM(first_purchase) AS first_purchase,
         SUM(SAFE_CAST(app_install AS INT64)) AS app_install
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_tiktok_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_tiktok_cab_meta`
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
 ),
@@ -1645,9 +1645,9 @@ asa_cost AS (
         SUM(meta.impressions) AS impressions,
         SUM(sheet.clicks) AS clicks,
         SUM(sheet.spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets` sheet
-    --`perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta`
-    LEFT JOIN `perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta` meta
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_asa_cab_sheets` sheet
+    --`perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta`
+    LEFT JOIN `perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta` meta
     USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
@@ -1956,7 +1956,7 @@ google_cost AS (
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
     ELSE 'no_platform' END
  = 'ios', installs, NULL)) AS installs
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     AND campaign_name NOT IN (
@@ -2261,7 +2261,7 @@ huawei_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_huawei_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_huawei_cab_sheets`
     WHERE campaign_type = 'UA'
     AND status != "Deleted"
     GROUP BY 1,2,3,4,5,6,7
@@ -2332,7 +2332,7 @@ huawei AS (
 
 ----------------------- vk -------------------------
 
-vk_cost AS (
+vk_cost_pre AS (
     SELECT
         date,
         campaign_name,
@@ -2561,12 +2561,18 @@ vk_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_vk_cab_meta`
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
 ),
 
-vk_convs AS (
+vk_cost AS (
+    SELECT * FROM vk_cost_pre
+    UNION ALL
+    SELECT * FROM perekrestokvprok-bq.agg_data.vk_manual_cost -- ручные данные
+),
+
+vk_convs_pre AS (
     SELECT 
         date,
         campaign_name,
@@ -2587,6 +2593,12 @@ vk_convs AS (
     AND REGEXP_CONTAINS(campaign_name, r'realweb_vk')
     AND REGEXP_CONTAINS(campaign_name, r'new')
     GROUP BY 1,2,3,4,5,6,7
+),
+
+vk_convs AS (
+    SELECT * FROM vk_convs_pre
+    UNION ALL 
+    SELECT * FROM perekrestokvprok-bq.agg_data.vk_manual_data -- ручные данные
 ),
 
 vk AS (
@@ -2638,7 +2650,7 @@ rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'inapp'
 ),
@@ -2649,7 +2661,7 @@ limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'inapp'
 ),
@@ -2779,7 +2791,7 @@ x_rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'Xiaomi'
 ),
@@ -2790,7 +2802,7 @@ x_limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'Xiaomi'
 ),

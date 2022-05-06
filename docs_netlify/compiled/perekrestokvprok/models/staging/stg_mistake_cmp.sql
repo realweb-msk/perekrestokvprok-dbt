@@ -1,10 +1,6 @@
 
 
 
-
-
-
-
 SELECT
     mistake,
     correct

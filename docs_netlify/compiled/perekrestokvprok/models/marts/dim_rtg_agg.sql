@@ -57,7 +57,7 @@ WITH af_conversions AS (
         purchase,
         revenue,
         conversions AS re_engagement,
-    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_rtg_partners_by_date`
+    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_rtg_partners_by_date`
 ),
 
 ----------------------- facebook -------------------------
@@ -120,8 +120,8 @@ facebook_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets`
-    --`perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
 ),
@@ -230,7 +230,7 @@ yandex_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_yandex_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_yandex_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -340,7 +340,7 @@ vk_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_vk_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -450,7 +450,7 @@ mt_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_mytarget_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_mytarget_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -560,7 +560,7 @@ tiktok_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_tiktok_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_tiktok_cab_meta`
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb')
     AND campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
@@ -665,8 +665,8 @@ asa_cost AS (
         SUM(meta.impressions) AS impressions,
         SUM(sheet.clicks) AS clicks,
         SUM(sheet.spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets` sheet
-    LEFT JOIN `perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta` meta
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_asa_cab_sheets` sheet
+    LEFT JOIN `perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta` meta
     USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
@@ -781,7 +781,7 @@ google_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
     WHERE (campaign_type = 'retargeting'
     OR campaign_name IN (
             'realweb_uac_2022 [p:and] [cpi] [mskspb] [new] [general] [darkstore] [purchase] [firebase]',
@@ -895,7 +895,7 @@ tw_cost AS (
         SUM(impressions) AS impressions,
         0 AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_twitter_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_twitter_cab_sheets`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tw')
     GROUP BY 1,2,3,4,5,6
@@ -954,7 +954,7 @@ rate AS (
         partner,
         platform,
         rate_for_us
-FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
 WHERE type = 'RTG'
 ),
 
@@ -964,7 +964,7 @@ limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'RTG'
 ),
 

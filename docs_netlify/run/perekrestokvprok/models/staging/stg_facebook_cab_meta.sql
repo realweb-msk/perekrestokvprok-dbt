@@ -1,17 +1,8 @@
 
-        
-        
-    
 
-    
-
-    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta` as DBT_INTERNAL_DEST
-        using (
-          
-
-
-
-
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
+  OPTIONS()
+  as 
 
 WITH source AS (
   SELECT
@@ -29,8 +20,6 @@ WITH source AS (
       conversion_values
   FROM  `perekrestokvprok-bq`.`test2`.`facebook_ads_ad_stat_minimal_134923481805102`
   -- добавить после всех проверок
-  -- 
-  -- WHERE date_start = DATE_ADD(CURRENT_DATE(), INTERVAL -1 DAY)
   -- 
 ),
 
@@ -116,20 +105,54 @@ SELECT
 FROM unnests
 
 
-        ) as DBT_INTERNAL_SOURCE
-        on 
-            DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
-        
 
-    
-    when matched then update set
-        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`adset_name` = DBT_INTERNAL_SOURCE.`adset_name`,`ad_name` = DBT_INTERNAL_SOURCE.`ad_name`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`,`clicks` = DBT_INTERNAL_SOURCE.`clicks`,`installs` = DBT_INTERNAL_SOURCE.`installs`,`spend` = DBT_INTERNAL_SOURCE.`spend`,`purchase` = DBT_INTERNAL_SOURCE.`purchase`,`revenue` = DBT_INTERNAL_SOURCE.`revenue`,`first_purchase` = DBT_INTERNAL_SOURCE.`first_purchase`,`first_purchase_revenue` = DBT_INTERNAL_SOURCE.`first_purchase_revenue`,`add_to_cart` = DBT_INTERNAL_SOURCE.`add_to_cart`
-    
+-- первый раз --
+UNION ALL
+SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date AS STRING),
+      lower(campaign_name),
+      adset_name,
+      ad_name
+      ],'') AS unique_key,
+    date,
+    lower(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
+    adset_name,
+    ad_name,
+    show AS impressions,
+    clicks,
+    installs,
+    spend,
+    cnt_af_purchase AS purchase,
+    revenue,
+    cnt_first_purchase AS first_purchase,
+    first_purchase_revenue,
+    add_to_card
+FROM `perekrestokvprok-bq`.`sheets_data`.`FBNEW_data`
+WHERE date < (
+  SELECT MIN(date)
+  FROM unnests
+)
 
-    when not matched then insert
-        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `ad_name`, `impressions`, `clicks`, `installs`, `spend`, `purchase`, `revenue`, `first_purchase`, `first_purchase_revenue`, `add_to_cart`)
-    values
-        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `ad_name`, `impressions`, `clicks`, `installs`, `spend`, `purchase`, `revenue`, `first_purchase`, `first_purchase_revenue`, `add_to_cart`)
+--на будущее --
+-- UNION DISTINCT
+-- SELECT
+--     unique_key,
+--     date,
+--     campaign_name,
+--     adset_name,
+--     ad_name,
+--     impressions,
+--     clicks,
+--     installs,
+--     spend,
+--     purchase,
+--     revenue,
+--     first_purchase,
+--     first_purchase_revenue,
+--     add_to_cart
+-- FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
 
+;
 
-  

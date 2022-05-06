@@ -1,3 +1,4 @@
+WITH cte AS (
 SELECT 
     date,
     is_retargeting,
@@ -12,4 +13,24 @@ SELECT
     cnt_event AS event_count,
     {{ normalize('campaign') }} AS campaign_name
 FROM  {{ source ('agg_data', 'AF_client_data')}}
+)
+SELECT
+  date,
+  is_retargeting,
+    CASE
+        WHEN af_cid = 'campaign_id' THEN '61809857'
+        ELSE af_cid END AS af_cid,
+  adset_name,
+    CASE 
+        WHEN mediasource = 'mail.ru_int' and campaign_name = 'campaign_name' THEN 'yandexdirect_int'
+        ELSE mediasource END AS mediasource,
+  event_value,
+  platform,
+  event_name,
+  uniq_event_count,
+  event_revenue,
+  event_count,
+    CASE WHEN campaign_name = 'campaign_name' THEN 'realweb_ya_2022_and_ret_reg2_smartbanner'
+         ELSE campaign_name END AS campaign_name,
+FROM cte
 

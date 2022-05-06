@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_af_rtg_partners_by_date`
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_rtg_partners_by_date`
   OPTIONS()
   as WITH source_ios AS (
     SELECT 

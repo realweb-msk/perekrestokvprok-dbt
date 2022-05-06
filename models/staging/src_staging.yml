@@ -97,6 +97,12 @@ sources:
 
       - name: google_ads_costs_and_installs_sum
         description: сумма данных из google_ads_costs_and_installs_sum с 1 ноя 2021
+      
+      - name: vk_manual_data
+        description: ручные данные по конверсиям из vk
+      
+      - name: vk_manual_cost
+        description: ручные данные по костам из vk
 
   - name: DCM_impression_reach
     database: perekrestokvprok-bq
