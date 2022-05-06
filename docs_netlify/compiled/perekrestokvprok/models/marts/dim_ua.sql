@@ -2565,7 +2565,7 @@ vk_cost_pre AS (
 vk_cost AS (
     SELECT * FROM vk_cost_pre
     UNION ALL
-    SELECT * FROM perekrestokvprok-bq.agg_data.vk_manual_cost -- ручные данные
+    SELECT * FROM `perekrestokvprok-bq`.`agg_data`.`vk_manual_cost` -- ручные данные
 ),
 
 vk_convs_pre AS (
@@ -2594,7 +2594,7 @@ vk_convs_pre AS (
 vk_convs AS (
     SELECT * FROM vk_convs_pre
     UNION ALL 
-    SELECT * FROM perekrestokvprok-bq.agg_data.vk_manual_data -- ручные данные
+    SELECT * FROM `perekrestokvprok-bq`.`agg_data`.`vk_manual_data` -- ручные данные
 ),
 
 vk AS (
