@@ -5,7 +5,7 @@
     WITH source AS (
     SELECT
         DATE(MAX(date)) AS max_date
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_dbm_dv360_cost`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_google_dbm_dv360_cost`
     ),
 
     mistakes AS (

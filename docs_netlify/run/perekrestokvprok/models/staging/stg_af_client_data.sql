@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
   OPTIONS()
   as WITH cte AS (
 SELECT 
