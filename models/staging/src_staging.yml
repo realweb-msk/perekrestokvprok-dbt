@@ -70,6 +70,9 @@ sources:
 
       - name: yandex_direct_ad_keyword_stat_x5perek_direct
         description: Meta Yandex Direct (Autofeed Yandex Direct x5perek-direct Статистика по фразам и объявлениям (CUSTOM_REPORT))
+      
+      - name: yandex_direct_ad_keyword_stat_perek_vprok_sf
+        description: Meta Yandex Direct (Autofeed Yandex Direct perek-vprok-sf Статистика по фразам и объявлениям (CUSTOM_REPORT))
 
       - name: mytarget_banner_stat_d0927adb05_agency_client
         description: Meta MT (Autofeed MyTarget d0927adb05@agency_client Статистика по баннерам - https://meta.realweb.ru/card?e=2770&o=797ab813-c351-4e39-9cef-254144dfae39&a=58)
