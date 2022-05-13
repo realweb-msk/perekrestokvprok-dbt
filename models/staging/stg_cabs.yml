@@ -494,4 +494,5 @@ models:
     columns:
       - name: date
         tests:
-            - freshness
+            - freshness:
+                severity: "warn"
