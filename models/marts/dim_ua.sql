@@ -597,7 +597,7 @@ huawei AS (
 
 ----------------------- vk -------------------------
 
-vk_cost AS (
+vk_cost_pre AS (
     SELECT
         date,
         campaign_name,
@@ -614,7 +614,13 @@ vk_cost AS (
     GROUP BY 1,2,3,4,5,6,7
 ),
 
-vk_convs AS (
+vk_cost AS (
+    SELECT * FROM vk_cost_pre
+    UNION ALL
+    SELECT * FROM {{ source('agg_data', 'vk_manual_cost') }} -- ручные данные
+),
+
+vk_convs_pre AS (
     SELECT 
         date,
         campaign_name,
@@ -635,6 +641,12 @@ vk_convs AS (
     AND REGEXP_CONTAINS(campaign_name, r'realweb_vk')
     AND REGEXP_CONTAINS(campaign_name, r'new')
     GROUP BY 1,2,3,4,5,6,7
+),
+
+vk_convs AS (
+    SELECT * FROM vk_convs_pre
+    UNION ALL 
+    SELECT * FROM {{ source('agg_data', 'vk_manual_data') }} -- ручные данные
 ),
 
 vk AS (

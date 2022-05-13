@@ -1,17 +1,8 @@
 
-        
-        
-    
 
-    
-
-    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets` as DBT_INTERNAL_DEST
-        using (
-          
-
-
-
-
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_asa_cab_sheets`
+  OPTIONS()
+  as 
 
 WITH source AS (
     SELECT DISTINCT
@@ -64,20 +55,28 @@ SELECT DISTINCT
 FROM final
 
 
-        ) as DBT_INTERNAL_SOURCE
-        on 
-            DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
-        
 
-    
-    when matched then update set
-        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`adset_name` = DBT_INTERNAL_SOURCE.`adset_name`,`clicks` = DBT_INTERNAL_SOURCE.`clicks`,`spend` = DBT_INTERNAL_SOURCE.`spend`,`installs` = DBT_INTERNAL_SOURCE.`installs`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`
-    
+-- первый раз --
+UNION ALL
+SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date AS STRING),
+      LOWER(campaign_name)
+      ],'') AS unique_key,
+    date,
+    campaign_name,
+    campaign_type,
+    adset_name,
+    clicks,
+    spend,
+    0 installs,
+    impressions
+FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta`
+WHERE date < (
+  SELECT MIN(date)
+  FROM final
+)
+AND date IS NOT NULL
 
-    when not matched then insert
-        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `clicks`, `spend`, `installs`, `impressions`)
-    values
-        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `clicks`, `spend`, `installs`, `impressions`)
+;
 
-
-  

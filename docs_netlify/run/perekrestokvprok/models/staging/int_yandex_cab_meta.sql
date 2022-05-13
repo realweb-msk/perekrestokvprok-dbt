@@ -2,7 +2,7 @@
 
   create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_yandex_cab_meta`
   OPTIONS()
-  as WITH source AS (
+  as WITH source_1 AS (
     SELECT
         Date,
         CampaignName,
@@ -12,6 +12,24 @@
         Cost
     FROM `perekrestokvprok-bq`.`MetaCustom`.`yandex_direct_ad_keyword_stat_x5perek_direct`
     WHERE Date > '2021-02-01'
+),
+
+source_2 AS (
+    SELECT
+        Date,
+        CampaignName,
+        AdGroupName,
+        Impressions,
+        Clicks,
+        Cost
+    FROM `perekrestokvprok-bq`.`MetaCustom`.`yandex_direct_ad_keyword_stat_perek_vprok_sf`
+    WHERE Date >= '2022-04-28' and Date <= '2022-05-05'
+),
+
+source AS (
+    SELECT * FROM source_1
+    UNION ALL
+    SELECT * FROM source_2
 ),
 
 final AS (
