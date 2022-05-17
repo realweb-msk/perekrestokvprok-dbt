@@ -42,12 +42,18 @@ WITH af_conversions AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -104,12 +110,18 @@ facebook_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -214,12 +226,18 @@ yandex_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -324,12 +342,18 @@ vk_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -434,12 +458,18 @@ mt_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -544,12 +574,18 @@ tiktok_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -649,12 +685,18 @@ asa_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -765,12 +807,18 @@ google_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, adset_name], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
@@ -879,12 +927,18 @@ tw_cost AS (
         THEN 'Покупают от 2 раз в месяц'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'deep_outflow_rtg')
         THEN 'Deep_outflow_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_outflow_rtg')
+        THEN 'outflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_preflow_rtg')
+        THEN 'preflow'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'cpo_installed_the_app_but_not_buy_')
+        THEN 'Installed_the_app_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'first_open_.ot_buy_rtg')
         THEN 'First_open_not_buy_rtg'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'installed_the_app_but_not_buy_rtg')
         THEN 'Installed_the_app_but_not_buy_rtg'
-        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'registered_but_not_buy_rtg')
-        THEN 'Registered_but_not_buy_rtg'
+        WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'registered_but_not_buy')
+        THEN 'Registered_but_not_buy'
         WHEN REGEXP_CONTAINS(LOWER(ARRAY_TO_STRING([campaign_name, "-"], ' ')), 'firebase')
         THEN  "Предиктивная аудитория" 
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), 'inapp')
