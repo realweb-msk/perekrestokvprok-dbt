@@ -1,4 +1,4 @@
-WITH cte AS (
+WITH no_campaign AS (
 SELECT 
     date,
     is_retargeting,
@@ -13,6 +13,50 @@ SELECT
     cnt_event AS event_count,
     {{ normalize('campaign') }} AS campaign_name
 FROM  {{ source ('agg_data', 'AF_client_data')}}
+WHERE campaign != 'campaign_name' --убираем все campaign_name
+),
+campaign_name as (
+  SELECT
+    date,
+    is_retargeting,
+    af_c_id AS af_cid,
+    af_adset AS adset_name,
+    mediasource,
+    event_value,
+    platform,
+    eventname AS event_name,
+    unig_event AS uniq_event_count,
+    EventRevenue AS event_revenue,
+    cnt_event AS event_count,
+    {{ normalize('campaign') }} AS campaign_name
+  FROM (
+    SELECT * FROM {{ source ('agg_data', 'AF_client_data')}}
+    WHERE campaign = 'campaign_name'
+  ) av
+  WHERE date <'2022-05-01' OR date >'2022-05-15' --возвращаем campaign_name за определенные даты
+),
+smartbanners AS (
+  SELECT
+    date,
+    is_retargeting,
+    af_c_id AS af_cid,
+    af_adset AS adset_name,
+    mediasource,
+    event_value,
+    platform,
+    eventname AS event_name,
+    unig_event AS uniq_event_count,
+    EventRevenue AS event_revenue,
+    cnt_event AS event_count,
+    {{ normalize('campaign') }} AS campaign_name
+  FROM {{ source ('agg_data', 'AF_smartbanners_may_2022')}} --вместо campaign_name вставляем смартбаннеры
+),
+cte as (
+  SELECT * FROM no_campaign
+  UNION ALL
+  SELECT * FROM campaign_name
+  UNION ALL
+  SELECT * FROM smartbanners
 )
 SELECT
   date,

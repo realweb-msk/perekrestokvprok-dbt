@@ -94,6 +94,9 @@ sources:
     tables:
       - name: AF_client_data
         description: таблица с данными из аппсфлайера, которая работает на scheduled query. Нет разрешений, чтобы выдать доступ для нашего сервисного акка на доступ к сырым данным (radiant-entry-230109.appsflayer_events.*)
+      
+      - name: AF_smartbanners_may_2022
+        description: Таблица с исправленными кампаниями по смартбаннерам с 1 по 15 мая 2022.
 
       - name: promocod_client_data
         description: данные из клиентской CRM,  scheduled query. Нет разрешений, чтобы выдать доступ для нашего сервисного акка на доступ к сырым данным (radiant-entry-230109. BO_data.orders_bought_*)
