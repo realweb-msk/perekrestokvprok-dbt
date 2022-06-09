@@ -59,6 +59,9 @@ sources:
       - name: huawei_data
         description: Huawei из https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=646019346 
 
+      - name: zen_sheets
+        description: Zen from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=92059599 
+
   - name: MetaCustom
     database: perekrestokvprok-bq
     tables:

@@ -689,6 +689,91 @@ vk AS (
     AND COALESCE(vk_convs.campaign_name, vk_cost.campaign_name) != 'None'
 ),
 
+----------------------- zen -------------------------
+
+zen_cost AS (
+    SELECT
+        date,
+        campaign_name,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_type('campaign_name') }} as promo_type,
+        {{ geo('campaign_name') }} AS geo,
+        {{ promo_search('campaign_name') }} as promo_search,
+        campaign_type,
+        --SUM(impressions) AS impressions,
+        --SUM(clicks) AS clicks,
+        --SUM(spend) AS spend
+        0 impressions,
+        0 clicks,
+        SUM(cost) AS spend
+    FROM {{ ref('stg_zen_data_sheets') }}
+    WHERE campaign_type = 'UA'
+    GROUP BY 1,2,3,4,5,6,7
+),
+
+zen_convs AS (
+    SELECT 
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE is_retargeting = FALSE
+    AND REGEXP_CONTAINS(campaign_name, r'realweb_dz')
+    AND REGEXP_CONTAINS(campaign_name, r'_new_')
+    GROUP BY 1,2,3,4,5,6,7
+),
+
+zen AS (
+    SELECT
+        COALESCE(zen_convs.date, zen_cost.date) AS date,
+        COALESCE(zen_convs.campaign_name, zen_cost.campaign_name) AS campaign_name,
+        COALESCE(zen_convs.platform, zen_cost.platform) AS platform,
+        COALESCE(zen_convs.promo_type, zen_cost.promo_type) AS promo_type,
+        COALESCE(zen_convs.geo, zen_cost.geo) AS geo,
+        COALESCE(zen_convs.campaign_type, zen_cost.campaign_type) AS campaign_type,
+        COALESCE(zen_convs.promo_search, zen_cost.promo_search) AS promo_search,
+        COALESCE(impressions,0) AS impressions,
+        COALESCE(clicks,0) AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(spend,0) AS spend,
+        'Zen' AS source,
+        'Яндекс.Дзен' AS adv_type
+    FROM zen_convs
+    FULL OUTER JOIN zen_cost
+    ON zen_convs.date = zen_cost.date 
+    AND zen_convs.campaign_name = zen_cost.campaign_name
+    AND zen_convs.promo_type = zen_cost.promo_type
+    AND zen_convs.geo = zen_cost.geo
+    AND zen_convs.promo_search = zen_cost.promo_search
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(spend,0) > 0
+    AND COALESCE(zen_convs.campaign_name, zen_cost.campaign_name) != 'None'
+),
+
 ----------------------inapp----------------------------
 
 rate AS (
@@ -975,6 +1060,8 @@ unions AS (
     SELECT * FROM inapp
     UNION ALL
     SELECT * FROM xiaomi
+    UNION ALL
+    SELECT * FROM zen
 ),
 
 final AS (
