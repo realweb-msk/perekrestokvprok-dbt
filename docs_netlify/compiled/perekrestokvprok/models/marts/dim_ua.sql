@@ -3505,7 +3505,7 @@ realwebcpa AS (
         first_purchase_revenue,
         first_purchase,
         uniq_first_purchase,
-        first_purchase * 1000 AS spend,
+        uniq_first_purchase * 1000 AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
     FROM realwebcpa_convs
