@@ -1038,6 +1038,54 @@ xiaomi AS (
     AND campaign_name != 'None'
 ),
 
+----------------------Realweb CPA----------------------------
+
+realwebcpa_convs AS (
+    SELECT 
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE is_retargeting = FALSE
+    AND REGEXP_CONTAINS(campaign_name, r'realwebcpa')
+    GROUP BY 1,2,3,4,5,6,7
+),
+
+realwebcpa AS (
+    SELECT
+        date,
+        campaign_name,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        0 AS impressions,
+        0 AS clicks,
+        installs,
+        revenue,
+        purchase,
+        uniq_purchase,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        first_purchase * 1000 AS spend,
+        'Realweb CPA' AS source,
+        'Realweb CPA' AS adv_type
+    FROM realwebcpa_convs
+),
+
 ----------------------final----------------------------
 
 unions AS (
@@ -1062,6 +1110,8 @@ unions AS (
     SELECT * FROM xiaomi
     UNION ALL
     SELECT * FROM zen
+    UNION ALL
+    SELECT * FROM realwebcpa
 ),
 
 final AS (
