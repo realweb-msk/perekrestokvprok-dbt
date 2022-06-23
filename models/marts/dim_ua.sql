@@ -168,7 +168,7 @@ yandex AS (
 
 ----------------------- mytarget -------------------------
 
-mt_cost AS (
+mt_main_cost AS (
     SELECT
         date,
         campaign_name,
@@ -184,6 +184,31 @@ mt_cost AS (
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
+),
+
+mt_beta_cost AS (
+    SELECT DISTINCT
+        date,
+        campaign_name,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_type('campaign_name') }} as promo_type,
+        {{ geo('campaign_name') }} AS geo,
+        {{ promo_search('campaign_name') }} as promo_search,
+        campaign_type,
+        --SUM(impressions) AS impressions,
+        --SUM(clicks) AS clicks,
+        --SUM(spend) AS spend
+        0 impressions,
+        0 clicks,
+        cost AS spend
+    FROM perekrestokvprok-bq.dbt_production.stg_vk_beta_sheet
+    WHERE campaign_type = 'UA'
+),
+
+mt_cost AS (
+    SELECT * FROM mt_main_cost
+    UNION ALL
+    SELECT * FROM mt_beta_cost
 ),
 
 mt_convs AS (

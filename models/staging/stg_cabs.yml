@@ -496,3 +496,6 @@ models:
         tests:
             - freshness:
                 severity: "warn"
+
+  - name: stg_vk_beta_sheet
+    description: "MT из VK Beta"

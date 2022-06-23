@@ -61,6 +61,9 @@ sources:
 
       - name: zen_sheets
         description: Zen from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=92059599 
+      
+      - name: vk_beta_sheet
+        description: VK Beta from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=356120259 
 
   - name: MetaCustom
     database: perekrestokvprok-bq
