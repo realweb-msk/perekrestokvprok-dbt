@@ -1,15 +1,8 @@
 
 
-  create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_vk_beta_sheet`
-  partition by date
-  cluster by campaign_type
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_vk_beta_sheet`
   OPTIONS()
-  as (
-    
-
-
-
-
+  as 
 
 WITH source AS (
     SELECT
@@ -27,7 +20,7 @@ WITH source AS (
         )
  campaign_name,
         SUM(COALESCE(SAFE_CAST(REGEXP_REPLACE(REGEXP_REPLACE(cost, r',', '.'), r' ', '') AS FLOAT64), 0)) as cost
-    FROM perekrestokvprok-bq.sheets_data.vk_beta_sheet
+    FROM `perekrestokvprok-bq`.`sheets_data`.`vk_beta_sheet`
     WHERE date IS NOT NULL
     GROUP BY date, campaign_name
 ),
@@ -53,6 +46,5 @@ SELECT
     campaign_name,
     campaign_type,
     cost
-FROM final
-  );
-  
+FROM final;
+

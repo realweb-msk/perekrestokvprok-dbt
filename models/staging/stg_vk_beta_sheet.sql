@@ -20,7 +20,7 @@ WITH source AS (
         PARSE_DATE('%d.%m.%Y', date) AS date,
         {{ normalize('campaign_name')}} campaign_name,
         SUM(COALESCE(SAFE_CAST(REGEXP_REPLACE(REGEXP_REPLACE(cost, r',', '.'), r' ', '') AS FLOAT64), 0)) as cost
-    FROM perekrestokvprok-bq.sheets_data.vk_beta_sheet
+    FROM {{ source('sheets_data', 'vk_beta_sheet') }}
     WHERE date IS NOT NULL
     GROUP BY date, campaign_name
 ),

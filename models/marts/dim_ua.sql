@@ -201,7 +201,7 @@ mt_beta_cost AS (
         0 impressions,
         0 clicks,
         cost AS spend
-    FROM perekrestokvprok-bq.dbt_production.stg_vk_beta_sheet
+    FROM {{ ref('stg_vk_beta_sheet') }}
     WHERE campaign_type = 'UA'
 ),
 

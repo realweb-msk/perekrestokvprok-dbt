@@ -26,6 +26,7 @@ plans AS (
             WHEN plan_type = "UA" THEN "uac"
             WHEN plan_type = "PROMO" THEN "promo"
             WHEN plan_type = "RTG" THEN "rtg"
+            WHEN plan_type = "CPA" THEN "cpc"
             ELSE '-' END AS plan_type
     FROM array_table, UNNEST(date) AS date
 )
