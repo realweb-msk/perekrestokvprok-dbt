@@ -2829,7 +2829,7 @@ vk_convs_pre AS (
     FROM af_conversions
     WHERE is_retargeting = FALSE
     AND REGEXP_CONTAINS(campaign_name, r'realweb_vk')
-    AND REGEXP_CONTAINS(campaign_name, r'new')
+    --AND REGEXP_CONTAINS(campaign_name, r'new')
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -2857,7 +2857,7 @@ vk AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        COALESCE(spend,0) AS spend,
+        COALESCE(spend,0) / 1.2 AS spend, --Без НДС
         'ВК' AS source,
         'social' AS adv_type
     FROM vk_convs
