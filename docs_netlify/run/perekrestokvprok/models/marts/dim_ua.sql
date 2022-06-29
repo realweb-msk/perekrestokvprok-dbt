@@ -2833,7 +2833,7 @@ vk_convs_pre AS (
     FROM af_conversions
     WHERE is_retargeting = FALSE
     AND REGEXP_CONTAINS(campaign_name, r'realweb_vk')
-    --AND REGEXP_CONTAINS(campaign_name, r'new')
+    AND REGEXP_CONTAINS(campaign_name, r'new')
     GROUP BY 1,2,3,4,5,6,7
 ),
 
