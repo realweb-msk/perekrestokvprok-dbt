@@ -13,3 +13,6 @@ packages:
   - package: calogica/dbt_expectations
     version: 0.5.1
      # <see https://github.com/calogica/dbt-expectations/releases/latest> for the latest version tag
+  
+  - package: dbt-labs/materialized-views
+    version: 0.0.1

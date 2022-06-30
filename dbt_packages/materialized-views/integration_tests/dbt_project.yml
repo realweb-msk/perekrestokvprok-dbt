@@ -1,0 +1,24 @@
+
+name: 'dbt_labs_materialized_views_integration_tests'
+version: '0.2.0'
+config-version: 2
+
+profile: 'integration_tests'
+
+model-paths: ["models"]
+analysis-paths: ["analysis"] 
+test-paths: ["tests"]
+seed-paths: ["seed"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_modules"
+
+quoting:
+  identifier: false
+  schema: false
+    
+seeds:
+  quote_columns: false
