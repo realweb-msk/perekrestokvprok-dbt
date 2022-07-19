@@ -53,7 +53,7 @@ facebook_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -149,7 +149,7 @@ yandex_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -246,7 +246,7 @@ mt_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -343,7 +343,7 @@ tiktok_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -539,7 +539,7 @@ google_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -566,7 +566,7 @@ google_cost AS (
         SUM(IF(
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  = 'ios', installs, NULL)) AS installs
     FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
@@ -648,7 +648,7 @@ huawei_cost AS (
         
     CASE
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:ios\]|_ios_|p02') THEN 'ios'
-        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01') THEN 'android'
+        WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  as platform,
         
@@ -769,7 +769,7 @@ inapp_convs_without_cumulation AS (
         WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
         WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
         WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
-        WHEN REGEXP_CONTAINS(campaign_name, r'_abc_|_sf_') THEN 'Mediasurfer'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_abc[_\s]|_sf_') THEN 'Mediasurfer'
     ELSE '-' END
  AS partner,
         platform,
@@ -911,7 +911,7 @@ final AS (
         
     CASE 
         WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpi[\]_]') OR source = 'Apple Search Ads' THEN 'CPI'
-        WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpa[\]_]') THEN 'CPA'
+        WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpa[\]_]') OR REGEXP_CONTAINS(campaign_name, r'^realwebcpa') THEN 'CPA'
         WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpc[\]_]') THEN 'CPC'
         WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpm[\]_]') THEN 'CPM'
         WHEN REGEXP_CONTAINS(campaign_name, r'[\[_]cpo[\]_]') THEN 'CPO'

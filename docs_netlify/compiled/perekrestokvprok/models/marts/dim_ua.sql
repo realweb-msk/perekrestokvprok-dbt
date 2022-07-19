@@ -3463,6 +3463,145 @@ xiaomi AS (
     AND campaign_name != 'None'
 ),
 
+-----------------------------Bigo Ads--------------------------------
+
+big_rate AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        platform,
+        rate_for_us
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    WHERE type = 'UA'
+    AND source = 'Bigo Ads'
+),
+
+big_limits_table AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        limits
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    WHERE type = 'UA'
+    AND source = 'Bigo Ads'
+),
+
+bigo_convs_without_cumulation AS (
+    SELECT 
+        date,
+        campaign_name,
+        
+    CASE 
+        WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_abc[_\s]|_sf_') THEN 'Mediasurfer'
+    ELSE '-' END
+ AS partner,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_bigoads')
+    AND is_retargeting = FALSE
+    GROUP BY 1,2,3,4,5,6,7,8
+),
+
+bigo_convs_with_cumulation AS (
+    SELECT
+        date,
+        campaign_name,
+        partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        SUM(installs) OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, installs) AS cum_event_count_by_prt
+    FROM bigo_convs_without_cumulation
+),
+
+bigo_convs AS (
+    SELECT
+        date,
+        campaign_name,
+        bc.partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), installs, 0) AS installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+    FROM bigo_convs_with_cumulation bc
+    LEFT JOIN big_limits_table bl
+    ON bc.partner = bl.partner 
+    AND bc.date BETWEEN bl.start_date AND bl.end_date
+),
+
+bigo_ads AS (
+    SELECT
+        date,
+        campaign_name,
+        bi.platform AS platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        0 AS impressions,
+        0 AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(installs * rate_for_us,0)  AS spend,
+        'Bigo Ads' AS source,
+        'Bigo Ads' AS adv_type
+    FROM bigo_convs bi
+    LEFT JOIN big_rate br
+    ON bi.partner = br.partner 
+    AND bi.date BETWEEN br.start_date AND br.end_date
+    AND bi.platform = br.platform 
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(installs * rate_for_us,0) > 0
+    AND campaign_name != 'None'
+),
+
 ----------------------Realweb CPA----------------------------
 
 realwebcpa_convs AS (
@@ -3537,6 +3676,8 @@ unions AS (
     SELECT * FROM zen
     UNION ALL
     SELECT * FROM realwebcpa
+    UNION ALL
+    SELECT * FROM bigo_ads
 ),
 
 final AS (

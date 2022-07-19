@@ -1,10 +1,6 @@
 
 
 
-
-
-
-
 SELECT
     PlacementID AS placement_id,
     Placement,

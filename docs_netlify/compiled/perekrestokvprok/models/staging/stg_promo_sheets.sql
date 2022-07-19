@@ -1,10 +1,6 @@
 
 
 
-
-
-
-
 SELECT
     date_start,
     date_end,
