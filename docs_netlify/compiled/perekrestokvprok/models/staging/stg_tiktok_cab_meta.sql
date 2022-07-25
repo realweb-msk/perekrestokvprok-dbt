@@ -1,5 +1,9 @@
 
 
+
+
+
+
 WITH source AS (
     SELECT
         stat_time_day,
@@ -50,31 +54,4 @@ SELECT
     first_purchase,
     app_install
 FROM final
-
-
-
--- первый раз --
-UNION ALL
-SELECT DISTINCT
-    ARRAY_TO_STRING([
-      CAST(date AS STRING),
-      LOWER(campaign_name),
-      ad_group_name
-      ],'') AS unique_key,
-    date,
-    LOWER(campaign_name) AS campaign_name,
-    IF(REGEXP_CONTAINS(LOWER(campaign_name), r'_ret_'),'retargeting','UA') AS campaign_type,
-    ad_group_name AS adset_name,
-    0 AS impressions,
-    0 AS reach,
-    cost AS spend,
-    0 AS clicks,
-    total_purchases AS purchase,
-    total_achieve_level	 AS first_purchase,
-    0 AS app_install
-FROM `perekrestokvprok-bq`.`sheets_data`.`TIKTOK_table`
-WHERE date < (
-  SELECT MIN(date)
-  FROM final
-)
 

@@ -7,7 +7,7 @@ WITH clicks_table AS (
         clicks,
         revenue_adv_currency,
         profit_advertiser_currency
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_dbm_impressions_clicks_revenue_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_google_dbm_impressions_clicks_revenue_meta`
 ),
 
 af AS (
@@ -19,7 +19,7 @@ af AS (
         SUM(IF(event_name = 'af_purchase' AND is_retargeting = TRUE, event_count, 0)) AS af_rtg_purchase,
         SUM(IF(event_name = 'install', event_count, 0)) AS af_install,
         SUM(IF(event_name IN ('re-attribution','re-engagement'), event_count, 0)) AS af_re_engagement
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_for_media`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_af_for_media`
     GROUP BY 1,2,3
 ),
 
@@ -28,7 +28,7 @@ placement_dict AS (
         placement_id,
         placement,
         insertion_order_id
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_placement_dict`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_placement_dict`
 ),
 
 activity AS (
@@ -39,7 +39,7 @@ activity AS (
         purchase,
         retarget,
         installs
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_dcm_activity_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_google_dcm_activity_meta`
 ),
 
 reach AS (
@@ -48,7 +48,7 @@ reach AS (
         insertion_order,
         insertion_order_id,
         impression_reach
-    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_dcm_reach`
+    FROM  `perekrestokvprok-bq`.`dbt_production`.`int_google_dcm_reach`
 ),
 
 final AS (
