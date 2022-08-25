@@ -1235,7 +1235,7 @@ realwebcpa AS (
         first_purchase_revenue,
         first_purchase,
         uniq_first_purchase,
-        uniq_first_purchase * 1000 AS spend,
+        uniq_first_purchase * IF(date < '2022-08-18', 1000, 1200) AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
     FROM realwebcpa_convs
