@@ -19,7 +19,7 @@ WITH source AS (
             ), r'\+|-', '_')
         )
  campaign_name,
-        SUM(COALESCE(SAFE_CAST(REGEXP_REPLACE(REGEXP_REPLACE(cost, r',', '.'), r' ', '') AS FLOAT64), 0)) as cost
+        SUM(COALESCE(SAFE_CAST(REGEXP_REPLACE(cost, r',', '.') AS FLOAT64), 0)) as cost
     FROM `perekrestokvprok-bq`.`sheets_data`.`vk_beta_sheet`
     WHERE date IS NOT NULL
     GROUP BY date, campaign_name

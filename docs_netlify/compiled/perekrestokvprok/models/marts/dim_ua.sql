@@ -1333,7 +1333,7 @@ mt AS (
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(spend,0) AS spend,
-        'MyTarget' AS source,
+        'VK Ads' AS source,
         'social' AS adv_type
     FROM mt_convs
     FULL OUTER JOIN mt_cost
@@ -3644,7 +3644,7 @@ realwebcpa AS (
         first_purchase_revenue,
         first_purchase,
         uniq_first_purchase,
-        uniq_first_purchase * 1000 AS spend,
+        uniq_first_purchase * IF(date < '2022-08-18', 1000, 1200) AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
     FROM realwebcpa_convs
@@ -3658,8 +3658,8 @@ unions AS (
     SELECT * FROM mt
     UNION ALL  
     SELECT * FROM tiktok
-    UNION ALL
-    SELECT * FROM asa
+    --UNION ALL
+    --SELECT * FROM asa
     UNION ALL
     SELECT * FROM facebook
     UNION ALL
@@ -3676,8 +3676,8 @@ unions AS (
     SELECT * FROM zen
     UNION ALL
     SELECT * FROM realwebcpa
-    UNION ALL
-    SELECT * FROM bigo_ads
+    --UNION ALL
+    --SELECT * FROM bigo_ads
 ),
 
 final AS (

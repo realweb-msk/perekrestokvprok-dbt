@@ -2847,8 +2847,8 @@ final AS (
     SELECT * FROM tw
     UNION ALL 
     SELECT * FROM tiktok
-    UNION ALL
-    SELECT * FROM asa
+    --UNION ALL
+    --SELECT * FROM asa
     UNION ALL
     SELECT * FROM facebook
     UNION ALL

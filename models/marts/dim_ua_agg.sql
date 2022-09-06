@@ -708,8 +708,8 @@ unions AS (
     SELECT * FROM mt
     UNION ALL  
     SELECT * FROM tiktok
-    UNION ALL
-    SELECT * FROM asa
+    --UNION ALL
+    --SELECT * FROM asa
     UNION ALL
     SELECT * FROM facebook
     UNION ALL
