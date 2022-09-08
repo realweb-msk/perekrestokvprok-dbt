@@ -3662,8 +3662,9 @@ unions AS (
     SELECT * FROM mt
     UNION ALL  
     SELECT * FROM tiktok
-    --UNION ALL
-    --SELECT * FROM asa
+    UNION ALL
+    SELECT * FROM asa
+    WHERE date <= '2022-08-31'
     UNION ALL
     SELECT * FROM facebook
     UNION ALL
@@ -3680,8 +3681,9 @@ unions AS (
     SELECT * FROM zen
     UNION ALL
     SELECT * FROM realwebcpa
-    --UNION ALL
-    --SELECT * FROM bigo_ads
+    UNION ALL
+    SELECT * FROM bigo_ads
+    WHERE date <= '2022-08-31'
 ),
 
 final AS (

@@ -1141,8 +1141,9 @@ unions AS (
     SELECT * FROM mt
     UNION ALL  
     SELECT * FROM tiktok
-    --UNION ALL
-    --SELECT * FROM asa
+    UNION ALL
+    SELECT * FROM asa
+    WHERE date <= '2022-08-31'
     UNION ALL
     SELECT * FROM facebook
     UNION ALL
