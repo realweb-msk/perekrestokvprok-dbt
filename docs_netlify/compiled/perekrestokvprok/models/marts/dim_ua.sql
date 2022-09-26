@@ -231,7 +231,7 @@ WITH af_conversions AS (
         event_revenue,
         event_count,
         CASE 
-            WHEN REGEXP_CONTAINS(campaign_name, r'realweb_inapp_2022_tl_and_cpo_ma|realwebcpa_inapp_2022_as_and_cpo_qsm') AND date > '2022-08-31' THEN 'deleted'
+            WHEN REGEXP_CONTAINS(campaign_name, r'realwebcpa_inapp_2022_as_and_cpo_qsm') AND date > '2022-08-31' THEN 'deleted'
             ELSE campaign_name 
         END campaign_name
     FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
@@ -3208,6 +3208,15 @@ limits_table AS (
     AND source = 'inapp'
 ),
 
+campaign_limits AS (
+    SELECT
+        start_date,
+        end_date,
+        campaign as campaign_name,
+        limits
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_campaign_limits`
+),
+
 inapp_convs_without_cumulation AS (
     SELECT 
         date,
@@ -3260,31 +3269,36 @@ inapp_convs_with_cumulation AS (
         uniq_purchase,
         SUM(first_purchase) 
             OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
-            AS cum_event_count_by_prt
+            AS cum_event_count_by_prt,
+        SUM(first_purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH) ORDER BY date, first_purchase_revenue)
+            AS cum_first_purchase
     FROM inapp_convs_without_cumulation
 ),
 
 inapp_convs AS (
     SELECT
-        date,
-        campaign_name,
-        inapp_convs_with_cumulation.partner,
-        platform,
-        promo_type,
-        geo,
-        campaign_type,
-        promo_search,
-        installs,
-        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase_revenue, 0) AS first_purchase_revenue,
-        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), first_purchase, 0) AS first_purchase,
-        IF(cum_event_count_by_prt <= COALESCE(limits, 1000000), uniq_first_purchase, 0) AS uniq_first_purchase,
-        revenue,
-        purchase,
-        uniq_purchase,
-    FROM inapp_convs_with_cumulation
-    LEFT JOIN limits_table
-    ON inapp_convs_with_cumulation.partner = limits_table.partner 
-    AND inapp_convs_with_cumulation.date BETWEEN limits_table.start_date AND limits_table.end_date
+        i.date,
+        i.campaign_name,
+        i.partner,
+        i.platform,
+        i.promo_type,
+        i.geo,
+        i.campaign_type,
+        i.promo_search,
+        i.installs,
+        IF(cum_event_count_by_prt <= COALESCE(l.limits, 1000000), first_purchase_revenue, 0) AS first_purchase_revenue,
+        IF(cum_event_count_by_prt <= COALESCE(l.limits, 1000000) AND cum_first_purchase <= COALESCE(c.limits, 1000000), first_purchase, 0) AS first_purchase,
+        IF(cum_event_count_by_prt <= COALESCE(l.limits, 1000000), uniq_first_purchase, 0) AS uniq_first_purchase,
+        i.revenue,
+        i.purchase,
+        i.uniq_purchase,
+    FROM inapp_convs_with_cumulation i
+    LEFT JOIN limits_table l
+    ON i.partner = l.partner 
+    AND i.date BETWEEN l.start_date AND l.end_date
+    LEFT JOIN campaign_limits c ON i.campaign_name = c.campaign_name 
+    AND i.date BETWEEN c.start_date AND c.end_date
 ),
 
 inapp AS (

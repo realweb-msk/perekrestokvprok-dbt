@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
     SELECT DISTINCT
         date,
@@ -53,4 +49,28 @@ SELECT DISTINCT
     installs,
     0 impressions
 FROM final
+
+
+
+-- первый раз --
+UNION ALL
+SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date AS STRING),
+      LOWER(campaign_name)
+      ],'') AS unique_key,
+    date,
+    campaign_name,
+    campaign_type,
+    adset_name,
+    clicks,
+    spend,
+    0 installs,
+    impressions
+FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta`
+WHERE date < (
+  SELECT MIN(date)
+  FROM final
+)
+AND date IS NOT NULL
 

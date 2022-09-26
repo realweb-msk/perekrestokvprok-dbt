@@ -9,7 +9,7 @@ WITH source_t AS (
         plan_f_p,
         type,
         source
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
 ),
 
 rate_array AS (

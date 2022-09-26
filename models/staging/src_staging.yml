@@ -63,7 +63,10 @@ sources:
         description: Zen from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=92059599 
       
       - name: vk_beta_sheet
-        description: VK Beta from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=356120259 
+        description: VK Beta from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=356120259
+        
+      - name: campaign_limits
+        description: Campaign limits from https://docs.google.com/spreadsheets/d/1_NxQ637ap_BGeEQ8CPMAJvNNmMDX7u_Db9dBr6T7-NQ/edit#gid=0 
 
   - name: MetaCustom
     database: perekrestokvprok-bq

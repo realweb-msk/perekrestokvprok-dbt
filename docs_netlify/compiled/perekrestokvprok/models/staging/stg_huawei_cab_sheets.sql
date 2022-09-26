@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
     SELECT DISTINCT
         date,

@@ -499,3 +499,6 @@ models:
 
   - name: stg_vk_beta_sheet
     description: "MT из VK Beta"
+  
+  - name: stg_campaign_limits
+    description: "Campaign limits"
