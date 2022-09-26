@@ -7,7 +7,6 @@
 или сюда: https://brave-hermann-395dc3.netlify.app/#!/model/model.perekrestokvprok.dim_ua
 */
 
-
 WITH af_conversions AS (
     SELECT
         date,
@@ -235,7 +234,10 @@ WITH af_conversions AS (
         uniq_event_count,
         event_revenue,
         event_count,
-        campaign_name
+        CASE 
+            WHEN REGEXP_CONTAINS(campaign_name, r'realweb_inapp_2022_tl_and_cpo_ma|realwebcpa_inapp_2022_as_and_cpo_qsm') AND date > '2022-08-31' THEN 'deleted'
+            ELSE campaign_name 
+        END campaign_name
     FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
     -- WHERE is_retargeting = FALSE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
@@ -3241,6 +3243,7 @@ inapp_convs_without_cumulation AS (
     AND is_retargeting = FALSE
     GROUP BY 1,2,3,4,5,6,7,8
 ),
+
 
 inapp_convs_with_cumulation AS (
     SELECT
