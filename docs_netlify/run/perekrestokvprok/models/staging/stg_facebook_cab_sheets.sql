@@ -1,8 +1,17 @@
 
+        
+        
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_sheets`
-  OPTIONS()
-  as 
+    
+
+    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets` as DBT_INTERNAL_DEST
+        using (
+          
+
+
+
+
 
 WITH source AS (
   SELECT DISTINCT
@@ -61,36 +70,20 @@ FROM source
 WHERE counter = 1
 
 
+        ) as DBT_INTERNAL_SOURCE
+        on 
+            DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
+        
 
--- первый раз --
+    
+    when matched then update set
+        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`adset_name` = DBT_INTERNAL_SOURCE.`adset_name`,`ad_name` = DBT_INTERNAL_SOURCE.`ad_name`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`,`clicks` = DBT_INTERNAL_SOURCE.`clicks`,`installs` = DBT_INTERNAL_SOURCE.`installs`,`spend` = DBT_INTERNAL_SOURCE.`spend`,`purchase` = DBT_INTERNAL_SOURCE.`purchase`,`revenue` = DBT_INTERNAL_SOURCE.`revenue`,`first_purchase` = DBT_INTERNAL_SOURCE.`first_purchase`,`first_purchase_revenue` = DBT_INTERNAL_SOURCE.`first_purchase_revenue`,`add_to_cart` = DBT_INTERNAL_SOURCE.`add_to_cart`
+    
 
-UNION ALL
-SELECT DISTINCT
-    ARRAY_TO_STRING([
-      CAST(date AS STRING),
-      lower(campaign_name),
-      adset_name,
-      ad_name
-      ],'') AS unique_key,
-    date,
-    lower(campaign_name) campaign_name,
-    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
-    adset_name,
-    ad_name,
-    show AS impressions,
-    clicks,
-    installs,
-    spend,
-    cnt_af_purchase AS purchase,
-    revenue,
-    cnt_first_purchase AS first_purchase,
-    first_purchase_revenue,
-    add_to_card
-FROM `perekrestokvprok-bq`.`sheets_data`.`FBNEW_data`
-WHERE date < (
-  SELECT MIN(date)
-  FROM source
-)
+    when not matched then insert
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `ad_name`, `impressions`, `clicks`, `installs`, `spend`, `purchase`, `revenue`, `first_purchase`, `first_purchase_revenue`, `add_to_cart`)
+    values
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `ad_name`, `impressions`, `clicks`, `installs`, `spend`, `purchase`, `revenue`, `first_purchase`, `first_purchase_revenue`, `add_to_cart`)
 
-;
 
+  

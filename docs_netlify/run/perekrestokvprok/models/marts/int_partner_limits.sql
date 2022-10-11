@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`int_partner_limits`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_partner_limits`
   OPTIONS()
   as WITH source AS (
     SELECT
@@ -9,7 +9,7 @@
         partner,
         limits,
         type
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
 ),
 
 limits_array AS (

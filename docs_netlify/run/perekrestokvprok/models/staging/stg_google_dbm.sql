@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_dbm`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_google_dbm`
   OPTIONS()
   as WITH source AS (
     SELECT *,
