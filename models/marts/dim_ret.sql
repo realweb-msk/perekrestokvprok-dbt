@@ -43,7 +43,10 @@ facebook AS (
         SUM(installs) AS re_engagement,
         SUM(revenue) AS revenue,
         SUM(purchase) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         SUM(spend) AS spend,
+        'null' as base,
         'Facebook' AS source
     FROM {{ ref('stg_facebook_cab_sheets') }}
     --{{ ref('stg_facebook_cab_meta') }}
@@ -100,7 +103,10 @@ yandex AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
+        'null' as base,
         'Яндекс.Директ' AS source,
     FROM yandex_convs
     FULL OUTER JOIN yandex_cost
@@ -162,8 +168,11 @@ vk AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'ВК' AS source,
+        'null' as base,
+        'ВК' AS source
     FROM vk_convs
     FULL OUTER JOIN vk_cost
     ON vk_convs.date = vk_cost.date 
@@ -224,8 +233,11 @@ mt AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'MyTarget' AS source,
+        'null' as base,
+        'MyTarget' AS source
     FROM mt_convs
     FULL OUTER JOIN mt_cost
     ON mt_convs.date = mt_cost.date 
@@ -285,8 +297,11 @@ tw AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'Twitter' AS source,
+        'null' as base,
+        'Twitter' AS source
     FROM tw_convs
     FULL OUTER JOIN tw_cost
     ON tw_convs.date = tw_cost.date 
@@ -348,8 +363,11 @@ tiktok AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'TikTok' AS source,
+        'null' as base,
+        'TikTok' AS source
     FROM tiktok_convs
     FULL OUTER JOIN tiktok_cost
     ON tiktok_convs.date = tiktok_cost.date 
@@ -407,8 +425,11 @@ asa AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'Apple Search Ads' AS source,
+        'null' as base,
+        'Apple Search Ads' AS source
     FROM asa_convs
     FULL OUTER JOIN asa_cost
     ON asa_convs.date = asa_cost.date 
@@ -476,8 +497,11 @@ google AS (
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
         COALESCE(purchase,0) AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'Google Ads' AS source,
+        'null' as base,
+        'Google Ads' AS source
     FROM google_convs
     FULL OUTER JOIN google_cost
     ON google_convs.date = google_cost.date 
@@ -490,6 +514,30 @@ google AS (
 ),
 
 ----------------------- inapp -------------------------
+af_inapp AS (
+    SELECT
+        date,
+        is_retargeting,
+        af_cid,
+        adset_name,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ geo('campaign_name', 'adset_name') }} AS geo,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
+        {{ aud('campaign_name', 'adset_name') }} AS auditory,
+        mediasource,
+        platform,
+        CASE
+            WHEN event_name IN ('re-attribution','re-engagement')
+            THEN 're-engagement'
+            ELSE event_name END AS event_name,
+        uniq_event_count,
+        event_revenue,
+        event_count,
+        campaign_name
+    FROM {{ ref('stg_af_client_data') }}
+    -- WHERE is_retargeting = FALSE
+    -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
+),
 
 rate AS (
     SELECT
@@ -497,7 +545,8 @@ rate AS (
         end_date,
         partner,
         platform,
-        rate_for_us
+        rate_for_us,
+        base
 FROM {{ ref('stg_rate_info') }}
 WHERE type = 'RTG'
 ),
@@ -512,80 +561,122 @@ limits_table AS (
     WHERE type = 'RTG'
 ),
 
-inapp_events_without_cumulation AS (
-    SELECT DISTINCT
+inapp_convs_without_cumulation AS (
+    SELECT 
         date,
         campaign_name,
-        platform,
         {{ partner('campaign_name') }} AS partner,
+        auditory,
+        platform,
+        CASE
+      WHEN REGEXP_CONTAINS(campaign_name, r'deep_outflow') and date > '2022-10-04' THEN 'deep_outflow'
+      WHEN date >= '2022-10-01' and date <= '2022-10-04' THEN 'deep_outflow'
+      WHEN REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg') and date > '2022-10-04' THEN 'first_open_not_buy_rtg'
+      WHEN REGEXP_CONTAINS(campaign_name, r'installed_the_app_but_not_buy_rtg') and date > '2022-10-04' THEN 'installed_the_app_but_not_buy_rtg'
+      WHEN REGEXP_CONTAINS(campaign_name, r'registered_but_not_buy_rtg') and date > '2022-10-04' THEN 'registered_but_not_buy_rtg'
+      ELSE 'Other'
+    END as base,
         promo_type,
         promo_search,
-        auditory,
-        event_name,
-        event_revenue,
-        event_count,
-        SUM(event_count) 
-            OVER(PARTITION BY DATE_TRUNC(date, MONTH), event_name ORDER BY date, event_revenue)
-            AS cum_event_count
-        FROM af_conversions
-        WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
-        AND is_retargeting = TRUE
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
+    FROM af_inapp
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
+    AND is_retargeting = TRUE
+    GROUP BY 1,2,3,4,5,6,7,8
 ),
 
-inapp_events AS (
+inapp_convs_with_cumulation AS (
     SELECT
         date,
         campaign_name,
-        platform,
         partner,
+        platform,
+        base,
         promo_type,
-        promo_search,
         auditory,
-        event_name,
-        event_revenue,
-        event_count,
-        cum_event_count,
-        SUM(event_count) 
-            OVER(PARTITION BY DATE_TRUNC(date, MONTH), event_name, partner ORDER BY date, event_revenue)
-            AS cum_event_count_by_prt
-    FROM inapp_events_without_cumulation
+        promo_search,
+        first_purchase_revenue,
+        first_purchase,
+        revenue,
+        purchase,
+        re_engagement,
+        SUM(first_purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
+            AS cum_first_purchase_count_by_prt,
+        SUM(first_purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH) ORDER BY date, first_purchase_revenue)
+            AS cum_first_purchase,
+        SUM(purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, revenue)
+            AS cum_purchase_count_by_prt,
+        SUM(purchase) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH) ORDER BY date, revenue)
+            AS cum_purchase
+    FROM inapp_convs_without_cumulation
+),
+
+inapp_convs AS (
+    SELECT
+        i.date,
+        i.campaign_name,
+        i.partner,
+        i.platform,
+        base,
+        auditory,
+        cum_purchase,
+        i.promo_type,
+        i.promo_search,
+        IF(cum_first_purchase_count_by_prt <= COALESCE(l.limits, 1000000), first_purchase_revenue, 0) AS first_purchase_revenue,
+        IF(cum_first_purchase_count_by_prt <= COALESCE(l.limits, 1000000), first_purchase, 0) AS first_purchase, 
+        IF(cum_purchase_count_by_prt <= COALESCE(l.limits, 1000000), revenue, 0) AS revenue,
+        IF(cum_purchase_count_by_prt <= COALESCE(l.limits, 1000000), purchase, 0) AS purchase,
+        re_engagement
+    FROM inapp_convs_with_cumulation i
+    LEFT JOIN limits_table l
+    ON i.partner = l.partner 
+    AND i.date BETWEEN l.start_date AND l.end_date
 ),
 
 inapp AS (
     SELECT
         date,
         campaign_name,
-        inapp_events.platform,
+        inapp_convs.platform AS platform,
         promo_type,
         promo_search,
         auditory,
-        SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement,
-        SUM(IF(event_name = "af_purchase" and cum_event_count_by_prt <= COALESCE(limits, 1000000), event_revenue, 0)) AS revenue,
-        SUM(IF(event_name = "af_purchase" and cum_event_count_by_prt <= COALESCE(limits, 1000000), event_count, 0)) AS purchase,
-        SUM(
-            CASE
-                WHEN event_name = 'af_purchase' 
-                    AND date BETWEEN '2021-10-01' AND '2021-10-31'
-                    AND cum_event_count >= 3000 THEN event_count * 140
-                WHEN event_name = 'af_purchase' 
-                    AND date BETWEEN '2021-10-01' AND '2021-10-31'
-                    AND cum_event_count < 3000 THEN event_count * rate_for_us
-                WHEN event_name = 'af_purchase' 
-                    AND date NOT BETWEEN '2021-10-01' AND '2021-10-31'
-                    AND cum_event_count_by_prt <= COALESCE(limits, 1000000)
-                    THEN event_count * rate_for_us
-                ELSE 0 END
-            ) AS spend,
+        re_engagement,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        CASE
+                WHEN date BETWEEN '2021-10-01' AND '2021-10-31'
+                    AND cum_purchase >= 3000 THEN purchase * 140
+                WHEN date BETWEEN '2021-10-01' AND '2021-10-31'
+                    AND cum_purchase < 3000 THEN purchase * rate_for_us
+                WHEN date NOT BETWEEN '2021-10-01' AND '2021-10-31' AND date <= '2022-10-04'
+                    THEN purchase * rate_for_us
+                WHEN date > '2022-10-04'
+                    AND REGEXP_CONTAINS(inapp_convs.base, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
+                    THEN first_purchase * rate_for_us
+                WHEN date > '2022-10-04'
+                    AND REGEXP_CONTAINS(inapp_convs.base, r'deep_outflow')
+                    THEN purchase * rate_for_us
+                ELSE 0 END AS spend,
+        inapp_convs.base as base,
         'inapp' AS source
-    FROM inapp_events
+    FROM inapp_convs
     LEFT JOIN rate
-    ON inapp_events.partner = rate.partner 
-    AND inapp_events.date BETWEEN rate.start_date AND rate.end_date
-    AND inapp_events.platform = rate.platform
-    LEFT JOIN limits_table
-    ON inapp_events.partner = limits_table.partner 
-    AND inapp_events.date BETWEEN limits_table.start_date AND limits_table.end_date
-    GROUP BY 1,2,3,4,5,6
+    ON inapp_convs.partner = rate.partner 
+    AND inapp_convs.date BETWEEN rate.start_date AND rate.end_date
+    AND inapp_convs.platform = rate.platform
+    AND inapp_convs.base = rate.base 
+    WHERE campaign_name != 'None'
 ),
 
 final AS (
@@ -619,7 +710,10 @@ SELECT
     re_engagement,
     revenue,
     purchase,
+    first_purchase,
+    first_purchase_revenue,
     spend,
+    base,
     source,
     {{ geo('campaign_name') }} AS geo
 FROM final
