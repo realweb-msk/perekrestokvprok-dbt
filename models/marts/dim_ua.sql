@@ -871,7 +871,11 @@ inapp_convs_with_cumulation AS (
         promo_search,
         installs,
         first_purchase_revenue,
-        first_purchase,
+        CASE
+            WHEN REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg') 
+            AND date >= '2022-10-01' THEN 0
+            ELSE first_purchase
+        END as first_purchase,
         uniq_first_purchase,
         revenue,
         purchase,
