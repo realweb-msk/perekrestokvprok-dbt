@@ -12,7 +12,8 @@
         rate_for_us,
         plan_f_p,
         type,
-        source
+        source,
+        base
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 ),
 
@@ -25,7 +26,8 @@ rate_array AS (
         rate_for_us,
         plan_f_p,
         type,
-        source
+        source,
+        base
     FROM source_t
 ),
 
@@ -39,6 +41,7 @@ rate AS (
         plan_f_p,
         type,
         source,
+        base,
         rate_for_us * plan_f_p AS prt_budget,
         SUM((rate_for_us - rate_for_partner) * plan_f_p) OVER(PARTITION BY period) AS plan_mrg,
         SUM((rate_for_us - rate_for_partner) * plan_f_p) OVER(PARTITION BY period, partner) AS prt_plan_mrg,
@@ -55,6 +58,7 @@ final AS (
         plan_f_p,
         type,
         source,
+        base,
         prt_budget,
         plan_mrg,
         prt_plan_mrg,
@@ -70,6 +74,7 @@ SELECT
     plan_f_p,
     type,
     source,
+    base,
     prt_budget,
     plan_mrg,
     prt_plan_mrg,

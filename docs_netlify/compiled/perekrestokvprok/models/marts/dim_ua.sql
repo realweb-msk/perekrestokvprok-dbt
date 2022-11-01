@@ -3894,6 +3894,7 @@ SELECT
     uniq_first_purchase,
     spend,
     source,
+    'Other' as base,
     conversion_source_type,
     adv_type
 FROM final

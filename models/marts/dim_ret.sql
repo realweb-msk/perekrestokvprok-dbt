@@ -46,7 +46,7 @@ facebook AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         SUM(spend) AS spend,
-        'null' as base,
+        'Other' as base,
         'Facebook' AS source
     FROM {{ ref('stg_facebook_cab_sheets') }}
     --{{ ref('stg_facebook_cab_meta') }}
@@ -106,7 +106,7 @@ yandex AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'Яндекс.Директ' AS source,
     FROM yandex_convs
     FULL OUTER JOIN yandex_cost
@@ -171,7 +171,7 @@ vk AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'ВК' AS source
     FROM vk_convs
     FULL OUTER JOIN vk_cost
@@ -236,7 +236,7 @@ mt AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'MyTarget' AS source
     FROM mt_convs
     FULL OUTER JOIN mt_cost
@@ -300,7 +300,7 @@ tw AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'Twitter' AS source
     FROM tw_convs
     FULL OUTER JOIN tw_cost
@@ -366,7 +366,7 @@ tiktok AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'TikTok' AS source
     FROM tiktok_convs
     FULL OUTER JOIN tiktok_cost
@@ -428,7 +428,7 @@ asa AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'Apple Search Ads' AS source
     FROM asa_convs
     FULL OUTER JOIN asa_cost
@@ -500,7 +500,7 @@ google AS (
         null AS first_purchase,
         null AS first_purchase_revenue,
         COALESCE(spend,0) AS spend,
-        'null' as base,
+        'Other' as base,
         'Google Ads' AS source
     FROM google_convs
     FULL OUTER JOIN google_cost
