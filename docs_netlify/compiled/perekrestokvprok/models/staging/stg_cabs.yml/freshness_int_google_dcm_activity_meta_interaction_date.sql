@@ -5,7 +5,7 @@
     WITH source AS (
     SELECT
         DATE(MAX(interaction_date)) AS max_date
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_dcm_activity_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_google_dcm_activity_meta`
     ),
 
     mistakes AS (

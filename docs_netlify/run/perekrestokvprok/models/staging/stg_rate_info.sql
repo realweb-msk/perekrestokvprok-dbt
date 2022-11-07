@@ -1,15 +1,8 @@
 
 
-  create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
-  
-  
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
   OPTIONS()
-  as (
-    
-
-
-
-
+  as 
 
 
 SELECT
@@ -31,7 +24,6 @@ DISTINCT
       WHEN REGEXP_CONTAINS(campaign_name, r'registered_but_not_buy_rtg') THEN 'registered_but_not_buy_rtg'
       ELSE 'Other'
     END as base
-FROM `perekrestokvprok-bq.sheets_data._rates`
-WHERE start_date IS NOT NULL
-  );
-  
+FROM `perekrestokvprok-bq`.`sheets_data`.`_rates`
+WHERE start_date IS NOT NULL;
+

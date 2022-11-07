@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_google_cab_sheets`
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`int_google_cab_sheets`
   OPTIONS()
   as WITH 
 google_sheet AS (
@@ -27,7 +27,7 @@ google_storage AS (
         installs,
         clicks,
         impressions
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
     WHERE date < (
         SELECT MIN(date)
         FROM google_sheet

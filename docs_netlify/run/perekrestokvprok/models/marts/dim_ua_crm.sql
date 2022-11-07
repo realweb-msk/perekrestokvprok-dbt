@@ -1,11 +1,11 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_ua_crm`
+  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`dim_ua_crm`
   OPTIONS()
   as WITH af_orders AS (
     SELECT
         REGEXP_EXTRACT(REGEXP_REPLACE(event_value,'"',''), 'af_order_id:(.*?),') AS order_id
-    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
+    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
     WHERE event_name = "af_purchase"
 ),
 
@@ -19,7 +19,7 @@ client_data AS (
         platform,
         revenue,
         order_count
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promocode_client_data`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_promocode_client_data`
 ),
 
 promo_data AS (
@@ -29,7 +29,7 @@ promo_data AS (
         promocode,
         type,
         channel
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promo_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_promo_sheets`
 ),
 
 final AS (

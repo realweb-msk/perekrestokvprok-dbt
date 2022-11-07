@@ -28,5 +28,5 @@ DISTINCT
       WHEN REGEXP_CONTAINS(campaign_name, r'registered_but_not_buy_rtg') THEN 'registered_but_not_buy_rtg'
       ELSE 'Other'
     END as base
-FROM `perekrestokvprok-bq.sheets_data._rates`
+FROM {{ source('sheets_data', '_rates') }}
 WHERE start_date IS NOT NULL
