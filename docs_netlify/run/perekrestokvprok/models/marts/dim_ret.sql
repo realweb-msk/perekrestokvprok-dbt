@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`dim_ret`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_ret`
   OPTIONS()
   as /* 
 для лучшего понимания лучше заглянуть сюда: https://github.com/realweb-msk/perekrestokvprok-dbt
@@ -273,7 +273,7 @@ WITH af_conversions AS (
         event_revenue,
         event_count,
         campaign_name
-    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
+    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
     WHERE event_name IN('re-attribution','re-engagement',"af_purchase")
     -- WHERE is_retargeting = TRUE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
@@ -547,8 +547,8 @@ facebook AS (
         SUM(spend) AS spend,
         'Other' as base,
         'Facebook' AS source
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_sheets`
-    --`perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
 ),
@@ -816,7 +816,7 @@ yandex_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_yandex_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_yandex_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -1131,7 +1131,7 @@ vk_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_vk_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -1446,7 +1446,7 @@ mt_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_mytarget_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`int_mytarget_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -1761,7 +1761,7 @@ tw_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_twitter_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_twitter_cab_sheets`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb_tw')
     GROUP BY 1,2,3,4,5,6
@@ -2077,7 +2077,7 @@ tiktok_cost AS (
         SUM(spend) AS spend,
         -- для тиктока из кабинета:--
         SUM(purchase) AS purchase
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_tiktok_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_tiktok_cab_meta`
     WHERE campaign_type = 'retargeting'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6
@@ -2386,8 +2386,8 @@ asa_cost AS (
         -- SUM(impressions),
         -- SUM(clicks),
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_asa_cab_sheets`
-    --`perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta`
     WHERE campaign_type = 'retargeting'
     GROUP BY 1,2,3,4,5,6
 ),
@@ -2699,7 +2699,7 @@ google_cost AS (
         -- SUM(clicks),
         SUM(spend) AS spend,
         SUM(installs) AS re_engagement
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
     WHERE (campaign_type = 'retargeting'
     --- костыль 10.02.2022 X5RGPEREK-272 ---
     OR campaign_name IN (
@@ -3032,7 +3032,7 @@ af_inapp AS (
         event_revenue,
         event_count,
         campaign_name
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
     -- WHERE is_retargeting = FALSE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
 ),
@@ -3045,7 +3045,7 @@ rate AS (
         platform,
         rate_for_us,
         base
-FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
+FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
 WHERE type = 'RTG'
 ),
 
@@ -3055,7 +3055,7 @@ limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
     WHERE type = 'RTG'
 ),
 

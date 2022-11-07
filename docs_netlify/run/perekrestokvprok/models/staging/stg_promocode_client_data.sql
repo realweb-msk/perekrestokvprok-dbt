@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_promocode_client_data`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_promocode_client_data`
   OPTIONS()
   as SELECT
     DATE(orderDate) AS order_date,

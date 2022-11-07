@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`int_mytarget_cab_meta`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_mytarget_cab_meta`
   OPTIONS()
   as WITH source AS (
     SELECT

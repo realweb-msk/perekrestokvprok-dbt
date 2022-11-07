@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`dim_plan_budget`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_plan_budget`
   OPTIONS()
   as WITH source AS (
     SELECT
@@ -9,7 +9,7 @@
         plan_budget,
         plan_type,
         plan_order
-    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_budget_and_plan`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_budget_and_plan`
 ),
 
 array_table AS (

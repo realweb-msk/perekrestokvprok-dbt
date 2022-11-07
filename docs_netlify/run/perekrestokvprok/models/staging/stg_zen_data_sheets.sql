@@ -1,8 +1,17 @@
 
+        
+        
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_lazuta`.`stg_zen_data_sheets`
-  OPTIONS()
-  as 
+    
+
+    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_zen_data_sheets` as DBT_INTERNAL_DEST
+        using (
+          
+
+
+
+
 
 WITH source AS (
     SELECT DISTINCT
@@ -45,5 +54,21 @@ SELECT
     campaign_name,
     campaign_type,
     cost
-FROM final;
+FROM final
+        ) as DBT_INTERNAL_SOURCE
+        on 
+            DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
+        
 
+    
+    when matched then update set
+        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`cost` = DBT_INTERNAL_SOURCE.`cost`
+    
+
+    when not matched then insert
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `cost`)
+    values
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `cost`)
+
+
+  
