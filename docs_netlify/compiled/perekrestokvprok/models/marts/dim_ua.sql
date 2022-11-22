@@ -3625,10 +3625,23 @@ bigo_ads AS (
 
 ----------------------Realweb CPA----------------------------
 
+realwebcpa_rate AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        platform,
+        rate_for_us
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    WHERE type = 'UA'
+    AND source = 'realweb_cpa'
+),
+
 realwebcpa_convs AS (
     SELECT 
         date,
         campaign_name,
+        'Realweb CPA' AS partner,
         platform,
         promo_type,
         geo,
@@ -3644,31 +3657,49 @@ realwebcpa_convs AS (
     FROM af_conversions
     WHERE is_retargeting = FALSE
     AND REGEXP_CONTAINS(campaign_name, r'realwebcpa')
-    GROUP BY 1,2,3,4,5,6,7
+    GROUP BY 1,2,3,4,5,6,7,8
 ),
 
 realwebcpa AS (
     SELECT
         date,
         campaign_name,
-        platform,
+        rwc.platform,
         promo_type,
         geo,
         campaign_type,
         promo_search,
         0 AS impressions,
         0 AS clicks,
-        installs,
-        revenue,
-        purchase,
-        uniq_purchase,
-        first_purchase_revenue,
-        first_purchase,
-        uniq_first_purchase,
-        uniq_first_purchase * IF(date < '2022-08-18', 1000, 1200) AS spend,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        CASE 
+            WHEN date < '2022-10-01' and date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
+            WHEN date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
+            ELSE COALESCE(uniq_first_purchase * rate_for_us, 0) 
+        END AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
-    FROM realwebcpa_convs
+    FROM realwebcpa_convs rwc
+    LEFT JOIN realwebcpa_rate rwr
+    ON rwc.partner = rwr.partner 
+    AND rwc.date BETWEEN rwr.start_date AND rwr.end_date
+    AND rwc.platform = rwr.platform 
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(uniq_first_purchase * rate_for_us,0) > 0
+    AND campaign_name != 'None'
 ),
 
 ----------------------Xapads----------------------------
