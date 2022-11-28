@@ -168,7 +168,7 @@ yandex AS (
     AND COALESCE(yandex_convs.campaign_name, yandex_cost.campaign_name) != 'None'
 ),
 
------------------------ mytarget -------------------------
+----------------------- VK Реклама / MyTarget -------------------------
 
 mt_main_cost AS (
     SELECT
@@ -230,9 +230,10 @@ mt_convs AS (
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
     FROM af_conversions
-    WHERE is_retargeting = FALSE
+    WHERE (is_retargeting = FALSE
     AND REGEXP_CONTAINS(campaign_name, r'realweb_mt')
-    AND REGEXP_CONTAINS(campaign_name, r'new')
+    AND REGEXP_CONTAINS(campaign_name, r'new')) OR (is_retargeting = FALSE AND REGEXP_CONTAINS(mediasource, r'mail.ru_int') 
+    AND REGEXP_CONTAINS(campaign_name, r'realweb'))
     GROUP BY 1,2,3,4,5,6,7
 ),
 
