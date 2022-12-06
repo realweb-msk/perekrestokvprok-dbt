@@ -535,6 +535,7 @@ af_inapp AS (
         event_count,
         campaign_name
     FROM {{ ref('stg_af_client_data') }}
+    WHERE NOT REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
     -- WHERE is_retargeting = FALSE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
 ),

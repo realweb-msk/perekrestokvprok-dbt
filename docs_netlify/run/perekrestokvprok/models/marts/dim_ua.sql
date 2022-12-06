@@ -3198,8 +3198,8 @@ rate AS (
         platform,
         rate_for_us
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
-    WHERE type = 'UA'
-    AND source = 'inapp'
+    WHERE (type = 'UA' AND source = 'inapp')
+    OR REGEXP_CONTAINS(base, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
 ),
 
 limits_table AS (
@@ -3249,8 +3249,8 @@ inapp_convs_without_cumulation AS (
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
     FROM af_conversions
-    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_inapp')
-    AND is_retargeting = FALSE
+    WHERE (REGEXP_CONTAINS(campaign_name, r'realweb_inapp') AND is_retargeting = FALSE)
+    OR REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
     GROUP BY 1,2,3,4,5,6,7,8
 ),
 
@@ -3269,7 +3269,7 @@ inapp_convs_with_cumulation AS (
         first_purchase_revenue,
         CASE
             WHEN REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg') 
-            AND date >= '2022-10-01' THEN 0
+            AND date >= '2022-10-01' AND date < '2022-12-01'THEN 0
             ELSE first_purchase
         END as first_purchase,
         uniq_first_purchase,
