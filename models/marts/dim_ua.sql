@@ -47,6 +47,7 @@ facebook AS (
         SUM(first_purchase_revenue) AS first_purchase_revenue,
         SUM(first_purchase) AS first_purchase,
         SUM(first_purchase) AS uniq_first_purchase,
+        0 as orders,
         SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
         'Facebook' AS source,
         "social" as adv_type
@@ -146,6 +147,7 @@ yandex AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Яндекс.Директ' AS source,
         'context' AS adv_type
@@ -255,6 +257,7 @@ mt AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'VK Ads' AS source,
         'social' AS adv_type
@@ -341,6 +344,7 @@ tiktok AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'TikTok' AS source,
         'social' AS adv_type
@@ -429,6 +433,7 @@ asa AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Apple Search Ads' AS source,
         'context' AS adv_type
@@ -518,6 +523,7 @@ google AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Google Ads' AS source,
         'context' AS adv_type
@@ -601,6 +607,7 @@ huawei AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Huawei' AS source,
         'context' AS adv_type
@@ -695,6 +702,7 @@ vk AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) / 1.2 AS spend, --Без НДС
         'ВК' AS source,
         'social' AS adv_type
@@ -780,6 +788,7 @@ zen AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Zen' AS source,
         'Яндекс.Дзен' AS adv_type
@@ -836,9 +845,17 @@ campaign_limits AS (
     FROM {{ ref('stg_campaign_limits') }}
 ),
 
+inapp_orders AS (
+    SELECT
+        date,
+        campaign,
+        orders
+    FROM `perekrestokvprok-bq.dbt_production.crm_redeem_first_orders`
+),
+
 inapp_convs_without_cumulation AS (
     SELECT 
-        date,
+        t.date,
         campaign_name,
         {{ partner('campaign_name') }} AS partner,
         platform,
@@ -853,7 +870,11 @@ inapp_convs_without_cumulation AS (
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-    FROM af_conversions
+        SUM(orders)
+    FROM af_conversions t
+    LEFT JOIN inapp_orders io ON
+    t.campaign_name = io.campaign AND
+    t.date = io.date
     WHERE (REGEXP_CONTAINS(campaign_name, r'realweb_inapp') AND is_retargeting = FALSE)
     OR REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
     GROUP BY 1,2,3,4,5,6,7,8
@@ -881,6 +902,7 @@ inapp_convs_with_cumulation AS (
         revenue,
         purchase,
         uniq_purchase,
+        orders,
         SUM(first_purchase) 
             OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
             AS cum_event_count_by_prt,
@@ -907,6 +929,7 @@ inapp_convs AS (
         i.revenue,
         i.purchase,
         i.uniq_purchase,
+        i.orders
     FROM inapp_convs_with_cumulation i
     LEFT JOIN limits_table l
     ON i.partner = l.partner 
@@ -933,7 +956,8 @@ inapp AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        COALESCE(first_purchase * rate_for_us,0)  AS spend,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
         'inapp' AS source,
         'inapp' AS adv_type
     FROM inapp_convs
@@ -949,7 +973,7 @@ inapp AS (
         COALESCE(first_purchase_revenue,0) +
         COALESCE(first_purchase,0) + 
         COALESCE(uniq_first_purchase,0) +
-        COALESCE(first_purchase * rate_for_us,0) > 0
+        COALESCE(orders * rate_for_us,0) > 0
     AND campaign_name != 'None'
 ),
 
@@ -1065,6 +1089,7 @@ xiaomi AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(installs * rate_for_us,0)  AS spend,
         'Xiaomi' AS source,
         'Xiaomi' AS adv_type
@@ -1195,6 +1220,7 @@ bigo_ads AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(installs * rate_for_us,0)  AS spend,
         'Bigo Ads' AS source,
         'Bigo Ads' AS adv_type
@@ -1270,6 +1296,7 @@ realwebcpa AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         CASE 
             WHEN date < '2022-10-01' and date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
             WHEN date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
@@ -1406,6 +1433,7 @@ xapads AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(first_purchase * rate_for_us,0)  AS spend,
         'Xapads' AS source,
         'Xapads' AS adv_type
@@ -1478,6 +1506,7 @@ final AS (
         first_purchase_revenue,
         first_purchase,
         uniq_first_purchase,
+        orders,
         spend,
         source,
         {{ conversion_source_type('campaign_name', 'source') }} AS conversion_source_type,
@@ -1502,6 +1531,7 @@ SELECT
     first_purchase_revenue,
     first_purchase,
     uniq_first_purchase,
+    orders,
     spend,
     source,
     'Other' as base,

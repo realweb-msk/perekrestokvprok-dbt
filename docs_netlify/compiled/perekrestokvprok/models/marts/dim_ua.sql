@@ -234,7 +234,7 @@ WITH af_conversions AS (
             WHEN REGEXP_CONTAINS(campaign_name, r'realwebcpa_inapp_2022_as_and_cpo_qsm') AND date > '2022-08-31' THEN 'deleted'
             ELSE campaign_name 
         END campaign_name
-    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
+    FROM  `perekrestokvprok-bq`.`dbt_lazuta`.`stg_af_client_data`
     -- WHERE is_retargeting = FALSE
     -- AND REGEXP_CONTAINS(campaign_name, 'realweb')
 ),
@@ -476,11 +476,12 @@ facebook AS (
         SUM(first_purchase_revenue) AS first_purchase_revenue,
         SUM(first_purchase) AS first_purchase,
         SUM(first_purchase) AS uniq_first_purchase,
+        0 as orders,
         SUM(IF(campaign_type = 'UA', spend, 0)) AS spend,
         'Facebook' AS source,
         "social" as adv_type
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_sheets`
-    --`perekrestokvprok-bq`.`dbt_production`.`stg_facebook_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_sheets`
+    --`perekrestokvprok-bq`.`dbt_lazuta`.`stg_facebook_cab_meta`
     GROUP BY 1,2,3,4,5,6,7
 ),
 
@@ -715,7 +716,7 @@ yandex_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_yandex_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_yandex_cab_meta`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
@@ -792,6 +793,7 @@ yandex AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Яндекс.Директ' AS source,
         'context' AS adv_type
@@ -1045,7 +1047,7 @@ mt_main_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_mytarget_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_mytarget_cab_meta`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
@@ -1283,7 +1285,7 @@ mt_beta_cost AS (
         0 impressions,
         0 clicks,
         cost AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_vk_beta_sheet`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_vk_beta_sheet`
     WHERE campaign_type = 'UA'
 ),
 
@@ -1335,6 +1337,7 @@ mt AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'VK Ads' AS source,
         'social' AS adv_type
@@ -1592,7 +1595,7 @@ tiktok_cost AS (
         SUM(purchase) AS purchase,
         SUM(first_purchase) AS first_purchase,
         SUM(SAFE_CAST(app_install AS INT64)) AS app_install
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_tiktok_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_tiktok_cab_meta`
     WHERE REGEXP_CONTAINS(campaign_name, r'realweb')
     GROUP BY 1,2,3,4,5,6,7
 ),
@@ -1638,6 +1641,7 @@ tiktok AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'TikTok' AS source,
         'social' AS adv_type
@@ -1886,9 +1890,9 @@ asa_cost AS (
         SUM(meta.impressions) AS impressions,
         SUM(sheet.clicks) AS clicks,
         SUM(sheet.spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_asa_cab_sheets` sheet
-    --`perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta`
-    LEFT JOIN `perekrestokvprok-bq`.`dbt_production`.`int_asa_cab_meta` meta
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_asa_cab_sheets` sheet
+    --`perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta`
+    LEFT JOIN `perekrestokvprok-bq`.`dbt_lazuta`.`int_asa_cab_meta` meta
     USING(date, campaign_name, campaign_type, adset_name)
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
@@ -1938,6 +1942,7 @@ asa AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Apple Search Ads' AS source,
         'context' AS adv_type
@@ -2197,7 +2202,7 @@ google_cost AS (
         WHEN REGEXP_CONTAINS(LOWER(campaign_name), r'\[p:and\]|_and_|android|p01|:and_') THEN 'android'
     ELSE 'no_platform' END
  = 'ios', installs, NULL)) AS installs
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_google_cab_sheets`
     WHERE campaign_type = 'UA'
     AND REGEXP_CONTAINS(campaign_name, r'realweb')
     AND campaign_name NOT IN (
@@ -2249,6 +2254,7 @@ google AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Google Ads' AS source,
         'context' AS adv_type
@@ -2502,7 +2508,7 @@ huawei_cost AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_huawei_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_huawei_cab_sheets`
     WHERE campaign_type = 'UA'
     AND status != "Deleted"
     GROUP BY 1,2,3,4,5,6,7
@@ -2549,6 +2555,7 @@ huawei AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Huawei' AS source,
         'context' AS adv_type
@@ -2802,7 +2809,7 @@ vk_cost_pre AS (
         SUM(impressions) AS impressions,
         SUM(clicks) AS clicks,
         SUM(spend) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`int_vk_cab_meta`
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
 ),
@@ -2860,6 +2867,7 @@ vk AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) / 1.2 AS spend, --Без НДС
         'ВК' AS source,
         'social' AS adv_type
@@ -3116,7 +3124,7 @@ zen_cost AS (
         0 impressions,
         0 clicks,
         SUM(cost) AS spend
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_zen_data_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_zen_data_sheets`
     WHERE campaign_type = 'UA'
     GROUP BY 1,2,3,4,5,6,7
 ),
@@ -3162,6 +3170,7 @@ zen AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(spend,0) AS spend,
         'Zen' AS source,
         'Яндекс.Дзен' AS adv_type
@@ -3193,7 +3202,7 @@ rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE (type = 'UA' AND source = 'inapp')
     OR REGEXP_CONTAINS(base, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
 ),
@@ -3204,7 +3213,7 @@ limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'inapp'
 ),
@@ -3215,12 +3224,20 @@ campaign_limits AS (
         end_date,
         campaign as campaign_name,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_campaign_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_campaign_limits`
+),
+
+inapp_orders AS (
+    SELECT
+        date,
+        campaign,
+        orders
+    FROM `perekrestokvprok-bq.dbt_production.crm_redeem_first_orders`
 ),
 
 inapp_convs_without_cumulation AS (
     SELECT 
-        date,
+        t.date,
         campaign_name,
         
     CASE 
@@ -3244,7 +3261,11 @@ inapp_convs_without_cumulation AS (
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-    FROM af_conversions
+        SUM(orders)
+    FROM af_conversions t
+    LEFT JOIN inapp_orders io ON
+    t.campaign_name = io.campaign AND
+    t.date = io.date
     WHERE (REGEXP_CONTAINS(campaign_name, r'realweb_inapp') AND is_retargeting = FALSE)
     OR REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
     GROUP BY 1,2,3,4,5,6,7,8
@@ -3272,6 +3293,7 @@ inapp_convs_with_cumulation AS (
         revenue,
         purchase,
         uniq_purchase,
+        orders,
         SUM(first_purchase) 
             OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
             AS cum_event_count_by_prt,
@@ -3298,6 +3320,7 @@ inapp_convs AS (
         i.revenue,
         i.purchase,
         i.uniq_purchase,
+        i.orders
     FROM inapp_convs_with_cumulation i
     LEFT JOIN limits_table l
     ON i.partner = l.partner 
@@ -3324,7 +3347,8 @@ inapp AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        COALESCE(first_purchase * rate_for_us,0)  AS spend,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
         'inapp' AS source,
         'inapp' AS adv_type
     FROM inapp_convs
@@ -3340,7 +3364,7 @@ inapp AS (
         COALESCE(first_purchase_revenue,0) +
         COALESCE(first_purchase,0) + 
         COALESCE(uniq_first_purchase,0) +
-        COALESCE(first_purchase * rate_for_us,0) > 0
+        COALESCE(orders * rate_for_us,0) > 0
     AND campaign_name != 'None'
 ),
 
@@ -3353,7 +3377,7 @@ x_rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'Xiaomi'
 ),
@@ -3364,7 +3388,7 @@ x_limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'Xiaomi'
 ),
@@ -3465,6 +3489,7 @@ xiaomi AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(installs * rate_for_us,0)  AS spend,
         'Xiaomi' AS source,
         'Xiaomi' AS adv_type
@@ -3494,7 +3519,7 @@ big_rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'Bigo Ads'
 ),
@@ -3505,7 +3530,7 @@ big_limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'Bigo Ads'
 ),
@@ -3604,6 +3629,7 @@ bigo_ads AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(installs * rate_for_us,0)  AS spend,
         'Bigo Ads' AS source,
         'Bigo Ads' AS adv_type
@@ -3633,7 +3659,7 @@ realwebcpa_rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'realweb_cpa'
 ),
@@ -3679,6 +3705,7 @@ realwebcpa AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         CASE 
             WHEN date < '2022-10-01' and date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
             WHEN date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
@@ -3712,7 +3739,7 @@ xapads_rate AS (
         partner,
         platform,
         rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_rate_info`
     WHERE type = 'UA'
     AND source = 'Xapads'
 ),
@@ -3723,7 +3750,7 @@ xapads_limits_table AS (
         end_date,
         partner,
         limits
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_lazuta`.`stg_partner_limits`
     WHERE type = 'UA'
     AND source = 'Xapads'
 ),
@@ -3824,6 +3851,7 @@ xapads AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        0 as orders,
         COALESCE(first_purchase * rate_for_us,0)  AS spend,
         'Xapads' AS source,
         'Xapads' AS adv_type
@@ -3896,6 +3924,7 @@ final AS (
         first_purchase_revenue,
         first_purchase,
         uniq_first_purchase,
+        orders,
         spend,
         source,
         
@@ -3928,6 +3957,7 @@ SELECT
     first_purchase_revenue,
     first_purchase,
     uniq_first_purchase,
+    orders,
     spend,
     source,
     'Other' as base,

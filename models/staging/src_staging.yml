@@ -70,7 +70,9 @@ sources:
 
       - name: _rates
         description: New rates for inside from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1919397242
-
+      
+      - name: crm_redeem_first_orders
+        description: Выкупленные заказы from https://docs.google.com/spreadsheets/d/1SoM6PRjrGG9h9SJA_VSMR6EagS0unZLsOey5XAJtDaA/edit#gid=936391085
 
   - name: MetaCustom
     database: perekrestokvprok-bq
