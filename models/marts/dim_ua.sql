@@ -850,12 +850,12 @@ inapp_orders AS (
         date,
         campaign,
         orders
-    FROM `perekrestokvprok-bq.dbt_production.crm_redeem_first_orders`
+    FROM {{ ref('stg_crm_orders') }}
 ),
 
 inapp_convs_without_cumulation AS (
     SELECT 
-        t.date,
+        date,
         campaign_name,
         {{ partner('campaign_name') }} AS partner,
         platform,
@@ -869,17 +869,12 @@ inapp_convs_without_cumulation AS (
         SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
-        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-        SUM(orders)
-    FROM af_conversions t
-    LEFT JOIN inapp_orders io ON
-    t.campaign_name = io.campaign AND
-    t.date = io.date
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase
+    FROM af_conversions
     WHERE (REGEXP_CONTAINS(campaign_name, r'realweb_inapp') AND is_retargeting = FALSE)
     OR REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
     GROUP BY 1,2,3,4,5,6,7,8
 ),
-
 
 inapp_convs_with_cumulation AS (
     SELECT
@@ -902,7 +897,6 @@ inapp_convs_with_cumulation AS (
         revenue,
         purchase,
         uniq_purchase,
-        orders,
         SUM(first_purchase) 
             OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, first_purchase_revenue)
             AS cum_event_count_by_prt,
@@ -929,13 +923,16 @@ inapp_convs AS (
         i.revenue,
         i.purchase,
         i.uniq_purchase,
-        i.orders
+        io.orders
     FROM inapp_convs_with_cumulation i
     LEFT JOIN limits_table l
     ON i.partner = l.partner 
     AND i.date BETWEEN l.start_date AND l.end_date
     LEFT JOIN campaign_limits c ON i.campaign_name = c.campaign_name 
     AND i.date BETWEEN c.start_date AND c.end_date
+    LEFT JOIN inapp_orders io ON
+    i.campaign_name = io.campaign AND
+    i.date = io.date
 ),
 
 inapp AS (
@@ -1050,7 +1047,7 @@ xiaomi_convs_with_cumulation AS (
 
 xiaomi_convs AS (
     SELECT
-        date,
+        xiaomi_convs_with_cumulation.date,
         campaign_name,
         xiaomi_convs_with_cumulation.partner,
         platform,
@@ -1065,10 +1062,14 @@ xiaomi_convs AS (
         revenue,
         purchase,
         uniq_purchase,
+        orders,
     FROM xiaomi_convs_with_cumulation
     LEFT JOIN x_limits_table
     ON xiaomi_convs_with_cumulation.partner = x_limits_table.partner 
     AND xiaomi_convs_with_cumulation.date BETWEEN x_limits_table.start_date AND x_limits_table.end_date
+    LEFT JOIN inapp_orders io ON
+    xiaomi_convs_with_cumulation.campaign_name = io.campaign AND
+    xiaomi_convs_with_cumulation.date = io.date
 ),
 
 xiaomi AS (
@@ -1089,8 +1090,8 @@ xiaomi AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        0 as orders,
-        COALESCE(installs * rate_for_us,0)  AS spend,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
         'Xiaomi' AS source,
         'Xiaomi' AS adv_type
     FROM xiaomi_convs
@@ -1280,7 +1281,7 @@ realwebcpa_convs AS (
 
 realwebcpa AS (
     SELECT
-        date,
+        rwc.date,
         campaign_name,
         rwc.platform,
         promo_type,
@@ -1296,11 +1297,11 @@ realwebcpa AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        0 as orders,
+        COALESCE(orders,0) AS orders,
         CASE 
-            WHEN date < '2022-10-01' and date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
-            WHEN date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
-            ELSE COALESCE(uniq_first_purchase * rate_for_us, 0) 
+            WHEN rwc.date < '2022-10-01' and rwc.date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
+            WHEN rwc.date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
+            ELSE COALESCE(orders * rate_for_us, 0) 
         END AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
@@ -1308,7 +1309,10 @@ realwebcpa AS (
     LEFT JOIN realwebcpa_rate rwr
     ON rwc.partner = rwr.partner 
     AND rwc.date BETWEEN rwr.start_date AND rwr.end_date
-    AND rwc.platform = rwr.platform 
+    AND rwc.platform = rwr.platform
+    LEFT JOIN inapp_orders io ON
+    rwc.campaign_name = io.campaign AND
+    rwc.date = io.date
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -1394,7 +1398,7 @@ xapads_convs_with_cumulation AS (
 
 xapads_convs AS (
     SELECT
-        date,
+        xapads_convs_with_cumulation.date,
         campaign_name,
         xapads_convs_with_cumulation.partner,
         platform,
@@ -1409,10 +1413,15 @@ xapads_convs AS (
         revenue,
         purchase,
         uniq_purchase,
+        orders
     FROM xapads_convs_with_cumulation
     LEFT JOIN xapads_limits_table
     ON xapads_convs_with_cumulation.partner = xapads_limits_table.partner 
     AND xapads_convs_with_cumulation.date BETWEEN xapads_limits_table.start_date AND xapads_limits_table.end_date
+    LEFT JOIN inapp_orders io ON
+    xapads_convs_with_cumulation.campaign_name = io.campaign AND
+    xapads_convs_with_cumulation.date = io.date
+
 ),
 
 xapads AS (
@@ -1433,8 +1442,8 @@ xapads AS (
         COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
-        0 as orders,
-        COALESCE(first_purchase * rate_for_us,0)  AS spend,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
         'Xapads' AS source,
         'Xapads' AS adv_type
     FROM xapads_convs

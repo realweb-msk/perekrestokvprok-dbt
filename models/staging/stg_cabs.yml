@@ -500,3 +500,6 @@ models:
   
   - name: stg_campaign_limits
     description: "Campaign limits"
+  
+  - name: stg_crm_orders
+    description: "Redeemed orders"
