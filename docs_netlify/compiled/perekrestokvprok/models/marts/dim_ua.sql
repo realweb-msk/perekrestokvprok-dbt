@@ -3660,6 +3660,139 @@ bigo_ads AS (
     AND campaign_name != 'None'
 ),
 
+-----------------------------Mintegral--------------------------------
+
+mintegral_rate AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        platform,
+        rate_for_us
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    WHERE type = 'UA'
+    AND source = 'mintegral'
+),
+
+mintegral_convs_without_cumulation AS (
+    SELECT 
+        date,
+        campaign_name,
+        
+    CASE 
+        WHEN REGEXP_CONTAINS(campaign_name, r'_ms_') THEN 'Mobisharks'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tl_') THEN '2leads'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_mx_') THEN 'MobX'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_sw_') THEN 'SW'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_tm_') THEN 'Think Mobile'
+        WHEN REGEXP_CONTAINS(campaign_name, r'_abc[_\s]|_sf_') THEN 'Mediasurfer'
+    ELSE '-' END
+ AS partner,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE REGEXP_CONTAINS(campaign_name, r'realweb_') AND REGEXP_CONTAINS(campaign_name, r'_mtg')
+    AND is_retargeting = FALSE
+    GROUP BY 1,2,3,4,5,6,7,8
+),
+
+mintegral_convs_with_cumulation AS (
+    SELECT
+        date,
+        campaign_name,
+        partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        SUM(installs) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, installs)
+            AS cum_event_count_by_prt
+    FROM mintegral_convs_without_cumulation
+),
+
+mintegral_convs AS (
+    SELECT
+        m.date,
+        campaign_name,
+        m.partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        orders
+    FROM mintegral_convs_with_cumulation m
+    LEFT JOIN inapp_orders io ON
+    m.campaign_name = io.campaign AND
+    m.date = io.date
+
+),
+
+mintegral AS (
+    SELECT
+        date,
+        campaign_name,
+        mintegral_convs.platform AS platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        0 AS impressions,
+        0 AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
+        'Mintegral' AS source,
+        'Mintegral' AS adv_type
+    FROM mintegral_convs
+    LEFT JOIN mintegral_rate
+    ON mintegral_convs.partner = mintegral_rate.partner 
+    AND mintegral_convs.date BETWEEN mintegral_rate.start_date AND mintegral_rate.end_date
+    AND mintegral_convs.platform = mintegral_rate.platform 
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(orders * rate_for_us,0) > 0
+    AND campaign_name != 'None'
+),
+
 ----------------------Realweb CPA----------------------------
 
 realwebcpa_rate AS (
@@ -3890,6 +4023,8 @@ xapads AS (
     AND campaign_name != 'None'
 ),
 
+
+
 ----------------------final----------------------------
 
 unions AS (
@@ -3922,6 +4057,8 @@ unions AS (
     WHERE date <= '2022-08-31'
     UNION ALL
     SELECT * FROM xapads
+    UNION ALL
+    SELECT * FROM mintegral
 ),
 
 final AS (
