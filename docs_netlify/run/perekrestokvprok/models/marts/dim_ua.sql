@@ -3205,11 +3205,10 @@ rate AS (
         end_date,
         partner,
         platform,
-        rate_for_us
+        rate_for_us,
+        base
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
-    WHERE (type = 'UA' AND source = 'inapp')
-    OR REGEXP_CONTAINS(base, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
-),
+    WHERE source = 'inapp'),
 
 limits_table AS (
     SELECT
@@ -3254,6 +3253,13 @@ inapp_convs_without_cumulation AS (
     ELSE '-' END
  AS partner,
         platform,
+        CASE
+      WHEN REGEXP_CONTAINS(campaign_name, r'deep_outflow') and date > '2022-10-04' THEN 'deep_outflow'
+      WHEN REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg') and date > '2022-10-04' THEN 'first_open_not_buy_rtg'
+      WHEN REGEXP_CONTAINS(campaign_name, r'installed_the_app_but_not_buy_rtg') and date > '2022-10-04' THEN 'installed_the_app_but_not_buy_rtg'
+      WHEN REGEXP_CONTAINS(campaign_name, r'registered_but_not_buy_rtg') and date > '2022-10-04' THEN 'registered_but_not_buy_rtg'
+      ELSE 'Other'
+    END as base,
         promo_type,
         geo,
         'UA' as campaign_type,
@@ -3268,7 +3274,7 @@ inapp_convs_without_cumulation AS (
     FROM af_conversions
     WHERE (REGEXP_CONTAINS(campaign_name, r'realweb_inapp') AND is_retargeting = FALSE)
     OR REGEXP_CONTAINS(campaign_name, r'first_open_not_buy_rtg|installed_the_app_but_not_buy_rtg|registered_but_not_buy_rtg')
-    GROUP BY 1,2,3,4,5,6,7,8
+    GROUP BY 1,2,3,4,5,6,7,8,9
 ),
 
 inapp_convs_with_cumulation AS (
@@ -3277,6 +3283,7 @@ inapp_convs_with_cumulation AS (
         campaign_name,
         partner,
         platform,
+        base,
         promo_type,
         geo,
         campaign_type,
@@ -3308,6 +3315,7 @@ inapp_convs AS (
         i.partner,
         i.platform,
         i.promo_type,
+        base,
         i.geo,
         i.campaign_type,
         i.promo_search,
@@ -3356,7 +3364,8 @@ inapp AS (
     LEFT JOIN rate
     ON inapp_convs.partner = rate.partner 
     AND inapp_convs.date BETWEEN rate.start_date AND rate.end_date
-    AND inapp_convs.platform = rate.platform 
+    AND inapp_convs.platform = rate.platform
+    AND inapp_convs.base = rate.base 
     WHERE 
         COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
@@ -3712,9 +3721,9 @@ realwebcpa AS (
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(orders,0) AS orders,
         CASE 
-            WHEN rwc.date < '2022-10-01' and rwc.date > '2022-08-18' THEN COALESCE(uniq_first_purchase * 1200, 0)
-            WHEN rwc.date <= '2022-08-18' THEN COALESCE(uniq_first_purchase * 1000, 0)
-            ELSE COALESCE(orders * rate_for_us, 0) 
+            WHEN rwc.date < '2022-10-01' and rwc.date > '2022-08-18' THEN COALESCE(first_purchase * 1200, 0)
+            WHEN rwc.date <= '2022-08-18' THEN COALESCE(first_purchase * 1000, 0)
+            ELSE COALESCE(first_purchase * rate_for_us, 0) 
         END AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
@@ -3734,7 +3743,7 @@ realwebcpa AS (
         COALESCE(first_purchase_revenue,0) +
         COALESCE(first_purchase,0) + 
         COALESCE(uniq_first_purchase,0) +
-        COALESCE(uniq_first_purchase * rate_for_us,0) > 0
+        COALESCE(first_purchase * rate_for_us,0) > 0
     AND campaign_name != 'None'
 ),
 
