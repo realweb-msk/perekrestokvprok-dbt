@@ -27,7 +27,7 @@ dbt docs generate --target prod
 2. [Устанавливаем Visual Studio Code](https://code.visualstudio.com/download)
 3. [Устанавливаем Git](https://git-scm.com/download)
 4. Запускаем Anaconda Prompt (Miniconda3). Создаём новое пространство для dbt (версия python = 3.8.5) `conda create --name dbt-env python=3.8.5 pip`
-5. Переходим в него `conda activate dbt-env` и устанавливаем dbt `pip install dbt-bigquery==1.2`
+5. Переходим в него `conda activate dbt-env` и устанавливаем dbt `pip install dbt-core==1.2 dbt-bigquery==1.2`
 6. Проверяем установку `dbt --version`
 7. Устанавливаем расширение `ms-python.python` в VSCode.
 8. В VSCode назначаем интерпетатор для Python в созданном пространства dbt-env
