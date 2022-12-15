@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
     SELECT
         PARSE_DATE('%d.%m.%Y', date) AS date,

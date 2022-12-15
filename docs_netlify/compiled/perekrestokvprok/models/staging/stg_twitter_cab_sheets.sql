@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
     SELECT DISTINCT
         string_field_0,
@@ -48,4 +44,25 @@ SELECT DISTINCT
     impressions,
     spend
 FROM final
+
+
+
+-- первый раз --
+UNION ALL
+SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date AS STRING),
+      LOWER(campaign_name)
+      ],'') AS unique_key,
+    date,
+    LOWER(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'_old_'),'retargeting','UA') AS campaign_type,
+    impressions,
+    spend,
+FROM `perekrestokvprok-bq`.`sheets_data`.`twitter_data`
+WHERE date < (
+  SELECT MIN(date)
+  FROM final
+)
+AND date IS NOT NULL
 

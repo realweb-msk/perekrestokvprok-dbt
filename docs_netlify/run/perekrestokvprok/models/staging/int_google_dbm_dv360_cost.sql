@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_google_dbm_dv360_cost`
+  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_google_dbm_dv360_cost`
   OPTIONS()
   as WITH source AS (
     SELECT 

@@ -1,10 +1,6 @@
 
 
 
-
-
-
-
 SELECT
 DISTINCT
     start_date,

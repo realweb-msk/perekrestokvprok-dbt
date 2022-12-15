@@ -35,7 +35,7 @@ new_source AS (
         clicks,
         revenue_adv_currency,
         profit_advertiser_currency
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_dbm`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_google_dbm`
     WHERE date >= '2021-12-01'
 ),
 

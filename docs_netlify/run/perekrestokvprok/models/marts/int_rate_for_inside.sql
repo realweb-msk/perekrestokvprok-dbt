@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_rate_for_inside`
+  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_rate_for_inside`
   OPTIONS()
   as WITH source_t AS (
     SELECT
@@ -14,7 +14,7 @@
         type,
         source,
         base
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_rate_info`
 ),
 
 rate_array AS (

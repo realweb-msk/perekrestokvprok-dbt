@@ -5,7 +5,7 @@ WITH source AS (
         partner,
         limits,
         type
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_partner_limits`
 ),
 
 limits_array AS (

@@ -1,10 +1,6 @@
 
 
 
-
-
-
-
 SELECT
     start_date,
     CAST(end_date as DATE) as end_date,

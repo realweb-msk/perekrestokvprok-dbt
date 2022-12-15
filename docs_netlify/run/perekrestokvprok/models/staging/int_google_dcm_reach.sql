@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_google_dcm_reach`
+  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_google_dcm_reach`
   OPTIONS()
   as WITH source AS (
     SELECT
