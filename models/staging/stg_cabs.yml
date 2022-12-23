@@ -503,3 +503,6 @@ models:
   
   - name: stg_crm_orders
     description: "Redeemed orders"
+
+  - name: stg_crm_orders_realwebcpa
+    description: "Redeemed orders_realwebcpa"

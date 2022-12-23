@@ -10,7 +10,7 @@ WITH source_t AS (
         type,
         source,
         base
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_rate_info`
 ),
 
 rate_array AS (

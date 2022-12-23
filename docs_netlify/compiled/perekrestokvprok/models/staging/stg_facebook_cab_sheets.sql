@@ -1,9 +1,5 @@
 
 
-
-
-
-
 WITH source AS (
   SELECT DISTINCT
         ARRAY_TO_STRING([
@@ -59,4 +55,36 @@ SELECT
     add_to_cart
 FROM source
 WHERE counter = 1
+
+
+
+-- первый раз --
+
+UNION ALL
+SELECT DISTINCT
+    ARRAY_TO_STRING([
+      CAST(date AS STRING),
+      lower(campaign_name),
+      adset_name,
+      ad_name
+      ],'') AS unique_key,
+    date,
+    lower(campaign_name) campaign_name,
+    IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
+    adset_name,
+    ad_name,
+    show AS impressions,
+    clicks,
+    installs,
+    spend,
+    cnt_af_purchase AS purchase,
+    revenue,
+    cnt_first_purchase AS first_purchase,
+    first_purchase_revenue,
+    add_to_card
+FROM `perekrestokvprok-bq`.`sheets_data`.`FBNEW_data`
+WHERE date < (
+  SELECT MIN(date)
+  FROM source
+)
 

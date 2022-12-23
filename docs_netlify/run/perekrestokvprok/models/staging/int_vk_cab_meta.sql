@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_vk_cab_meta`
+  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_vk_cab_meta`
   OPTIONS()
   as WITH source_1 AS (
     SELECT

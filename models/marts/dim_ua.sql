@@ -1389,6 +1389,14 @@ realwebcpa_rate AS (
     AND source = 'realweb_cpa'
 ),
 
+realwebcpa_orders AS (
+    SELECT
+        date,
+        campaign,
+        orders
+    FROM {{ ref('stg_crm_orders_realwebcpa') }}
+),
+
 realwebcpa_convs AS (
     SELECT 
         date,
@@ -1406,9 +1414,11 @@ realwebcpa_convs AS (
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
         SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
-    FROM af_conversions
+    FROM af_conversions 
     WHERE is_retargeting = FALSE
     AND REGEXP_CONTAINS(campaign_name, r'realwebcpa')
+    
+    
     GROUP BY 1,2,3,4,5,6,7,8
 ),
 
@@ -1443,7 +1453,7 @@ realwebcpa AS (
     ON rwc.partner = rwr.partner 
     AND rwc.date BETWEEN rwr.start_date AND rwr.end_date
     AND rwc.platform = rwr.platform
-    LEFT JOIN inapp_orders io ON
+    LEFT JOIN realwebcpa_orders io ON
     rwc.campaign_name = io.campaign AND
     rwc.date = io.date
     WHERE 

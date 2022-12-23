@@ -1,7 +1,7 @@
 WITH af_orders AS (
     SELECT
         REGEXP_EXTRACT(REGEXP_REPLACE(event_value,'"',''), 'af_order_id:(.*?),') AS order_id
-    FROM  `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
+    FROM  `perekrestokvprok-bq`.`dbt_krepin`.`stg_af_client_data`
     WHERE event_name = "af_purchase"
 ),
 
@@ -15,7 +15,7 @@ client_data AS (
         platform,
         revenue,
         order_count
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promocode_client_data`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_promocode_client_data`
 ),
 
 promo_data AS (
@@ -25,7 +25,7 @@ promo_data AS (
         promocode,
         type,
         channel
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promo_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_promo_sheets`
 ),
 
 final AS (
