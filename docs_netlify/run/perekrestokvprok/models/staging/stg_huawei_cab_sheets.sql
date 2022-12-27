@@ -1,8 +1,19 @@
 
+        
+            
+            
+        
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_huawei_cab_sheets`
-  OPTIONS()
-  as 
+    
+
+    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_huawei_cab_sheets` as DBT_INTERNAL_DEST
+        using (
+          
+
+
+
+
 
 WITH source AS (
     SELECT DISTINCT
@@ -65,5 +76,21 @@ SELECT
     clicks,
     impressions,
     exchange_rate
-FROM final;
+FROM final
+        ) as DBT_INTERNAL_SOURCE
+        on 
+                DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
+            
 
+    
+    when matched then update set
+        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`type` = DBT_INTERNAL_SOURCE.`type`,`status` = DBT_INTERNAL_SOURCE.`status`,`activations` = DBT_INTERNAL_SOURCE.`activations`,`cost` = DBT_INTERNAL_SOURCE.`cost`,`spend` = DBT_INTERNAL_SOURCE.`spend`,`clicks` = DBT_INTERNAL_SOURCE.`clicks`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`,`exchange_rate` = DBT_INTERNAL_SOURCE.`exchange_rate`
+    
+
+    when not matched then insert
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `type`, `status`, `activations`, `cost`, `spend`, `clicks`, `impressions`, `exchange_rate`)
+    values
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `type`, `status`, `activations`, `cost`, `spend`, `clicks`, `impressions`, `exchange_rate`)
+
+
+    

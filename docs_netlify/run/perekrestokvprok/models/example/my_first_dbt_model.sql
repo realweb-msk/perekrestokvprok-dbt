@@ -2,7 +2,7 @@
   
     
 
-    create or replace table `perekrestokvprok-bq`.`dbt_krepin`.`my_first_dbt_model`
+    create or replace table `perekrestokvprok-bq`.`dbt_production`.`my_first_dbt_model`
     
     
     OPTIONS()

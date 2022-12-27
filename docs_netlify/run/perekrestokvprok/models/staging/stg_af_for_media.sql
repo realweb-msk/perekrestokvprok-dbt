@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_af_for_media`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_af_for_media`
   OPTIONS()
   as SELECT
     atr_date AS date,

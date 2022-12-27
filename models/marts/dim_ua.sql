@@ -1375,6 +1375,132 @@ mintegral AS (
     AND campaign_name != 'None'
 ),
 
+-----------------------------Appnext--------------------------------
+appnext_rate AS (
+    SELECT
+        start_date,
+        end_date,
+        partner,
+        platform,
+        rate_for_us
+    FROM {{ ref('stg_rate_info') }}
+    WHERE type = 'UA'
+    AND source = 'appnext'
+),
+
+appnext_convs_without_cumulation AS (
+    SELECT 
+        date,
+        CASE
+            WHEN af_cid = '514529' THEN 'realweb_p01_a999_c211_m404_u2_vprok_test1'
+            ELSE campaign_name
+        END AS campaign_name,
+        {{ partner('campaign_name') }} AS partner,
+        platform,
+        promo_type,
+        geo,
+        'UA' as campaign_type,
+        promo_search,
+        SUM(IF(event_name = 'install', event_count,0)) AS installs,
+        SUM(IF(event_name = 'first_purchase', event_revenue,0)) AS first_purchase_revenue,
+        SUM(IF(event_name = 'first_purchase',event_count, 0)) AS first_purchase,
+        SUM(IF(event_name = 'first_purchase', uniq_event_count, 0)) AS uniq_first_purchase,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", uniq_event_count, 0)) AS uniq_purchase,
+    FROM af_conversions
+    WHERE (REGEXP_CONTAINS(campaign_name, r'_c211') OR REGEXP_CONTAINS(af_cid, r'514529'))
+    AND is_retargeting = FALSE
+    GROUP BY 1,2,3,4,5,6,7,8
+),
+
+appnext_convs_with_cumulation AS (
+    SELECT
+        date,
+        campaign_name,
+        partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        SUM(installs) 
+            OVER(PARTITION BY DATE_TRUNC(date, MONTH), partner ORDER BY date, installs)
+            AS cum_event_count_by_prt
+    FROM appnext_convs_without_cumulation
+),
+
+appnext_convs AS (
+    SELECT
+        m.date,
+        campaign_name,
+        m.partner,
+        platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        installs,
+        first_purchase_revenue,
+        first_purchase,
+        uniq_first_purchase,
+        revenue,
+        purchase,
+        uniq_purchase,
+        orders
+    FROM appnext_convs_with_cumulation m
+    LEFT JOIN inapp_orders io ON
+    m.campaign_name = io.campaign AND
+    m.date = io.date
+
+),
+
+appnext AS (
+    SELECT
+        date,
+        campaign_name,
+        appnext_convs.platform AS platform,
+        promo_type,
+        geo,
+        campaign_type,
+        promo_search,
+        0 AS impressions,
+        0 AS clicks,
+        COALESCE(installs,0) AS installs,
+        COALESCE(revenue,0) AS revenue,
+        COALESCE(purchase,0) AS purchase,
+        COALESCE(uniq_purchase,0) AS uniq_purchase,
+        COALESCE(first_purchase_revenue,0) AS first_purchase_revenue,
+        COALESCE(first_purchase,0) AS first_purchase,
+        COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
+        COALESCE(orders,0) AS orders,
+        COALESCE(orders * rate_for_us,0)  AS spend,
+        'Appnext' AS source,
+        'Appnext' AS adv_type
+    FROM appnext_convs
+    LEFT JOIN appnext_rate
+    ON appnext_convs.partner = appnext_rate.partner 
+    AND appnext_convs.date BETWEEN appnext_rate.start_date AND appnext_rate.end_date
+    AND appnext_convs.platform = appnext_rate.platform 
+    WHERE 
+        COALESCE(installs,0) + 
+        COALESCE(revenue,0) + 
+        COALESCE(purchase,0) + 
+        COALESCE(uniq_purchase,0) +
+        COALESCE(first_purchase_revenue,0) +
+        COALESCE(first_purchase,0) + 
+        COALESCE(uniq_first_purchase,0) +
+        COALESCE(orders * rate_for_us,0) > 0
+    AND campaign_name != 'None'
+),
+
 ----------------------Realweb CPA----------------------------
 
 realwebcpa_rate AS (
@@ -1642,6 +1768,8 @@ unions AS (
     SELECT * FROM xapads
     UNION ALL
     SELECT * FROM mintegral
+    UNION ALL
+    SELECT * FROM appnext
 ),
 
 final AS (

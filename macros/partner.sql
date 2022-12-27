@@ -6,5 +6,6 @@
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'_sw_') THEN 'SW'
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'_tm_') THEN 'Think Mobile'
         WHEN REGEXP_CONTAINS({{campaign_name}}, r'_abc[_\s]|_sf_') THEN 'Mediasurfer'
+        WHEN REGEXP_CONTAINS({{campaign_name}}, r'_a999') THEN 'In-house'
     ELSE '-' END
 {% endmacro %}

@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`dim_client_promo`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`dim_client_promo`
   OPTIONS()
   as ---костов здесь нет, добавь в PBI---
 WITH promo_client_data AS (
@@ -14,7 +14,7 @@ WITH promo_client_data AS (
         platform,
         revenue,
         order_count
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_promocode_client_data`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promocode_client_data`
 ),
 
 promo_dict AS (
@@ -22,7 +22,7 @@ promo_dict AS (
         LOWER(promocode) AS promo_code,
         type,
         channel
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_promo_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_promo_sheets`
 )
 
 SELECT

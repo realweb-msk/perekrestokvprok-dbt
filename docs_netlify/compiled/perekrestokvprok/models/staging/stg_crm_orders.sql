@@ -1,5 +1,9 @@
 
 
+
+
+
+
 SELECT
   date,
   REGEXP_REPLACE(REGEXP_REPLACE(campaign, r'.*\/ ', ''), r'\W', '') as campaign,

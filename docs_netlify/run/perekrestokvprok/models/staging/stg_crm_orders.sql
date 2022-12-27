@@ -1,8 +1,17 @@
 
+  
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_crm_orders`
-  OPTIONS()
-  as 
+    create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_crm_orders`
+    
+    
+    OPTIONS()
+    as (
+      
+
+
+
+
 
 SELECT
   date,
@@ -16,5 +25,6 @@ SELECT
   AND site = 'Новое мобильное приложение "Впрок"' 
   AND date_difference = 'Даты совпадают'
   --AND REGEXP_CONTAINS(campaign, r'realweb_inapp')
- GROUP BY 1,2;
-
+ GROUP BY 1,2
+    );
+  

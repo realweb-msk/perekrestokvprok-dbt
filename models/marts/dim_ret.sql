@@ -7,7 +7,7 @@ WITH af_conversions AS (
     SELECT
         date,
         is_retargeting,
-        --af_cid,
+        af_cid,
         --adset_name,
         {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
         {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
@@ -680,6 +680,75 @@ inapp AS (
     WHERE campaign_name != 'None'
 ),
 
+--------------------------------Appnext------------------------------------------
+
+Appnext_cost AS (
+    SELECT
+        date,
+        campaign_name,
+        {{ promo_type('campaign_name', 'adset_name') }} as promo_type,
+        {{ platform('campaign_name') }} as platform,
+        {{ promo_search('campaign_name', 'adset_name') }} as promo_search,
+        {{ aud('campaign_name', 'adset_name') }} AS auditory,
+        -- SUM(impressions),
+        -- SUM(clicks),
+        SUM(spend) AS spend,
+        SUM(purchase) AS purchase
+    FROM {{ ref('stg_tiktok_cab_meta') }} --!!! После появления таблицы со ставками для appnext дабавить ссылку
+    WHERE campaign_type = 'retargeting'
+    AND REGEXP_CONTAINS(campaign_name, r'_c211')
+    GROUP BY 1,2,3,4,5,6
+),
+
+Appnext_convs AS (
+    SELECT 
+        date,
+        CASE
+          WHEN af_cid = '514529' THEN 'realweb_p01_a999_c211_m404_u2_vprok_test1'
+          ELSE campaign_name
+        END AS campaign_name,
+        platform,
+        promo_type,
+        promo_search,
+        auditory,
+        SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
+        --SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
+    FROM af_conversions
+    WHERE  is_retargeting = TRUE
+    AND (REGEXP_CONTAINS(campaign_name, r'_c211') OR REGEXP_CONTAINS(af_cid, r'514529'))
+    GROUP BY 1,2,3,4,5,6
+),
+
+Appnext AS (
+    SELECT
+        COALESCE(Appnext_convs.date, Appnext_cost.date) AS date,
+        COALESCE(Appnext_convs.campaign_name, Appnext_cost.campaign_name) AS campaign_name,
+        COALESCE(Appnext_convs.platform, Appnext_cost.platform) AS platform,
+        COALESCE(Appnext_convs.promo_type, Appnext_cost.promo_type) AS promo_type,
+        COALESCE(Appnext_convs.promo_search, Appnext_cost.promo_search) AS promo_search,
+        COALESCE(Appnext_convs.auditory, Appnext_cost.auditory) AS auditory,
+        COALESCE(re_engagement,0) AS re_engagement,
+        COALESCE(revenue,0) AS revenue,
+        null AS purchase,
+        null AS first_purchase,
+        null AS first_purchase_revenue,
+        COALESCE(spend,0) AS spend,
+        'Other' as base,
+        'Appnext' AS source
+    FROM Appnext_convs
+    FULL OUTER JOIN Appnext_cost
+    ON Appnext_convs.date = Appnext_cost.date 
+    AND Appnext_convs.campaign_name = Appnext_cost.campaign_name
+    AND Appnext_convs.promo_type = Appnext_cost.promo_type
+    AND Appnext_convs.promo_search = Appnext_cost.promo_search
+    AND Appnext_convs.auditory = Appnext_cost.auditory
+    WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
+    --AND COALESCE(Appnext_convs.campaign_name, Appnext_cost.campaign_name) != 'None'
+),
+
+
+
 final AS (
     SELECT * FROM yandex
     UNION ALL 
@@ -699,6 +768,8 @@ final AS (
     SELECT * FROM inapp
     UNION ALL
     SELECT * FROM google
+    UNION ALL
+    SELECT * FROM Appnext
 )
 
 SELECT 

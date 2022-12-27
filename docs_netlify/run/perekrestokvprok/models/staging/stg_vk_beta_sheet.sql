@@ -1,8 +1,17 @@
 
+  
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_vk_beta_sheet`
-  OPTIONS()
-  as 
+    create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_vk_beta_sheet`
+    
+    
+    OPTIONS()
+    as (
+      
+
+
+
+
 
 WITH source AS (
     SELECT
@@ -46,5 +55,6 @@ SELECT
     campaign_name,
     campaign_type,
     cost
-FROM final;
-
+FROM final
+    );
+  

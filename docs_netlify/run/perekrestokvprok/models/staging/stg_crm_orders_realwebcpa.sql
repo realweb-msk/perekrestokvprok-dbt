@@ -1,8 +1,17 @@
 
+  
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_crm_orders_realwebcpa`
-  OPTIONS()
-  as 
+    create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_crm_orders_realwebcpa`
+    
+    
+    OPTIONS()
+    as (
+      
+
+
+
+
 
 SELECT
   date,
@@ -15,5 +24,6 @@ SELECT
   AND bo_order_id IS NOT NULL
   AND site = 'Новое мобильное приложение "Впрок"' 
   AND date_difference = 'Даты совпадают'
- GROUP BY 1,2;
-
+ GROUP BY 1,2
+    );
+  

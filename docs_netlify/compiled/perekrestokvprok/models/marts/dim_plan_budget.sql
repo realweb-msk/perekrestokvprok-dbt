@@ -5,7 +5,7 @@ WITH source AS (
         plan_budget,
         plan_type,
         plan_order
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_budget_and_plan`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_budget_and_plan`
 ),
 
 array_table AS (
