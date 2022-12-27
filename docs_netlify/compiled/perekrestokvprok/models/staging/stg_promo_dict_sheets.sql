@@ -1,6 +1,10 @@
 
 
 
+
+
+
+
 SELECT DISTINCT
     LOWER(promo) AS promo,
     name

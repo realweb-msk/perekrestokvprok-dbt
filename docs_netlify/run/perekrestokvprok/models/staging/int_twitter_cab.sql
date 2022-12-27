@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_twitter_cab`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_twitter_cab`
   OPTIONS()
   as WITH 
 twitter_sheet AS (
@@ -20,7 +20,7 @@ twitter_storage AS (
         campaign_type,
         impressions,
         spend
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_twitter_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_twitter_cab_sheets`
     WHERE date < (
         SELECT MIN(date)
         FROM twitter_sheet

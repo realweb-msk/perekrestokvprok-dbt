@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_af_client_data`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`stg_af_client_data`
   OPTIONS()
   as WITH no_campaign AS (
 SELECT 

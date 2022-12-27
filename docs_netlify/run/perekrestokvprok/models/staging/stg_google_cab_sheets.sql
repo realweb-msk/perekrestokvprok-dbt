@@ -1,8 +1,19 @@
 
+        
+            
+            
+        
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_google_cab_sheets`
-  OPTIONS()
-  as 
+    
+
+    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets` as DBT_INTERNAL_DEST
+        using (
+          
+
+
+
+
 
 WITH source AS (
     SELECT DISTINCT
@@ -61,29 +72,20 @@ SELECT
 FROM final
 
 -- 
+        ) as DBT_INTERNAL_SOURCE
+        on 
+                DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
+            
 
--- -- первый раз --
--- UNION ALL
--- SELECT DISTINCT
---     ARRAY_TO_STRING([
---             CAST(date AS STRING),
---             LOWER(campaign_name),
---             adset_name
---     ],'') AS unique_key,
---     date,
---     LOWER(campaign_name) campaign_name,
---     IF(REGEXP_CONTAINS(campaign_name, r'\[old\]'),'retargeting','UA') AS campaign_type,
---     adset_name,
---     costs AS spend,
---     installs,
---     clicks,
---     impressions
--- FROM `perekrestokvprok-bq`.`agg_data`.`google_ads_costs_and_installs_sum`
--- WHERE date NOT IN  < (
---   SELECT DISTINCT date
---   FROM final
--- )
--- AND date IS NOT NULL
+    
+    when matched then update set
+        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`adset_name` = DBT_INTERNAL_SOURCE.`adset_name`,`spend` = DBT_INTERNAL_SOURCE.`spend`,`installs` = DBT_INTERNAL_SOURCE.`installs`,`clicks` = DBT_INTERNAL_SOURCE.`clicks`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`
+    
 
--- ;
+    when not matched then insert
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `spend`, `installs`, `clicks`, `impressions`)
+    values
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `adset_name`, `spend`, `installs`, `clicks`, `impressions`)
 
+
+    

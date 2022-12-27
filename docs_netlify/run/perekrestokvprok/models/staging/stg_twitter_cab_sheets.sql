@@ -1,8 +1,19 @@
 
+        
+            
+            
+        
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_twitter_cab_sheets`
-  OPTIONS()
-  as 
+    
+
+    merge into `perekrestokvprok-bq`.`dbt_production`.`stg_twitter_cab_sheets` as DBT_INTERNAL_DEST
+        using (
+          
+
+
+
+
 
 WITH source AS (
     SELECT DISTINCT
@@ -50,25 +61,20 @@ SELECT DISTINCT
 FROM final
 
 
+        ) as DBT_INTERNAL_SOURCE
+        on 
+                DBT_INTERNAL_SOURCE.unique_key = DBT_INTERNAL_DEST.unique_key
+            
 
--- первый раз --
-UNION ALL
-SELECT DISTINCT
-    ARRAY_TO_STRING([
-      CAST(date AS STRING),
-      LOWER(campaign_name)
-      ],'') AS unique_key,
-    date,
-    LOWER(campaign_name) campaign_name,
-    IF(REGEXP_CONTAINS(campaign_name, r'_old_'),'retargeting','UA') AS campaign_type,
-    impressions,
-    spend,
-FROM `perekrestokvprok-bq`.`sheets_data`.`twitter_data`
-WHERE date < (
-  SELECT MIN(date)
-  FROM final
-)
-AND date IS NOT NULL
+    
+    when matched then update set
+        `unique_key` = DBT_INTERNAL_SOURCE.`unique_key`,`date` = DBT_INTERNAL_SOURCE.`date`,`campaign_name` = DBT_INTERNAL_SOURCE.`campaign_name`,`campaign_type` = DBT_INTERNAL_SOURCE.`campaign_type`,`impressions` = DBT_INTERNAL_SOURCE.`impressions`,`spend` = DBT_INTERNAL_SOURCE.`spend`
+    
 
-;
+    when not matched then insert
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `impressions`, `spend`)
+    values
+        (`unique_key`, `date`, `campaign_name`, `campaign_type`, `impressions`, `spend`)
 
+
+    

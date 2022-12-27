@@ -23,7 +23,7 @@ google_storage AS (
         installs,
         clicks,
         impressions
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_google_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_cab_sheets`
     WHERE date < (
         SELECT MIN(date)
         FROM google_sheet

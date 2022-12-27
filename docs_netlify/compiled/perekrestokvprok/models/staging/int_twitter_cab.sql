@@ -16,7 +16,7 @@ twitter_storage AS (
         campaign_type,
         impressions,
         spend
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_twitter_cab_sheets`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_twitter_cab_sheets`
     WHERE date < (
         SELECT MIN(date)
         FROM twitter_sheet

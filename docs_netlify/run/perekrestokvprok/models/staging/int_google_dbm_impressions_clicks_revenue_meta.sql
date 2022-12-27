@@ -1,6 +1,6 @@
 
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`int_google_dbm_impressions_clicks_revenue_meta`
+  create or replace view `perekrestokvprok-bq`.`dbt_production`.`int_google_dbm_impressions_clicks_revenue_meta`
   OPTIONS()
   as WITH old_source AS (
     SELECT
@@ -39,7 +39,7 @@ new_source AS (
         clicks,
         revenue_adv_currency,
         profit_advertiser_currency
-    FROM `perekrestokvprok-bq`.`dbt_krepin`.`stg_google_dbm`
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_google_dbm`
     WHERE date >= '2021-12-01'
 ),
 

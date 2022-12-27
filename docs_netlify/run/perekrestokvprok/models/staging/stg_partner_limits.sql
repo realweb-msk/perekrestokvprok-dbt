@@ -1,8 +1,17 @@
 
+  
+    
 
-  create or replace view `perekrestokvprok-bq`.`dbt_krepin`.`stg_partner_limits`
-  OPTIONS()
-  as 
+    create or replace table `perekrestokvprok-bq`.`dbt_production`.`stg_partner_limits`
+    
+    
+    OPTIONS()
+    as (
+      
+
+
+
+
 
 
 SELECT
@@ -13,5 +22,6 @@ SELECT
     type,
     source
 FROM `perekrestokvprok-bq`.`sheets_data`.`limits_sheet`
-WHERE start_date IS NOT NULL;
-
+WHERE start_date IS NOT NULL
+    );
+  
