@@ -1570,7 +1570,8 @@ realwebcpa AS (
         CASE 
             WHEN rwc.date < '2022-10-01' and rwc.date > '2022-08-18' THEN COALESCE(first_purchase * 1200, 0)
             WHEN rwc.date <= '2022-08-18' THEN COALESCE(first_purchase * 1000, 0)
-            ELSE COALESCE(first_purchase * rate_for_us, 0) 
+            WHEN rwc.date < '2022-11-01' and rwc.date >= '2022-10-01' THEN COALESCE(first_purchase * rate_for_us, 0)
+            ELSE COALESCE(orders * rate_for_us, 0)
         END AS spend,
         'Realweb CPA' AS source,
         'Realweb CPA' AS adv_type
