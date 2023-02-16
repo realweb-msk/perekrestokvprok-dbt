@@ -506,3 +506,6 @@ models:
 
   - name: stg_crm_orders_realwebcpa
     description: "Redeemed orders_realwebcpa"
+
+  - name: stg_appnext_cost
+    description: "Appnext cost"  

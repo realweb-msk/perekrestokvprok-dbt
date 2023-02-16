@@ -76,6 +76,9 @@ sources:
 
       - name: crm_redeem_first_orders_realwebcpa
         description: Выкупленные заказы realwebcpa from https://docs.google.com/spreadsheets/d/159JmxKc_3asbrswjvqQy_rCDowsmF3_iHhDePZbIy50/edit#gid=936391085
+      
+      - name: appnext_cost
+        description: Расходы для кампаний appnext from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1968718394
 
   - name: MetaCustom
     database: perekrestokvprok-bq
