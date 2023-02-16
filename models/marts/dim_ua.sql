@@ -1381,6 +1381,10 @@ appnext_cost AS (
         date,
         campaign_name,
         type,
+        CASE 
+            WHEN REGEXP_CONTAINS(campaign_name,'_p01_') THEN 'android'
+            WHEN REGEXP_CONTAINS(campaign_name,'_p02_') THEN 'ios'
+        END AS platform,
         cost
     FROM {{ ref('stg_appnext_cost') }}
     WHERE
@@ -1466,7 +1470,7 @@ appnext AS (
     SELECT
         COALESCE(appnext_convs.date,appnext_cost.date) AS date,
         COALESCE(appnext_convs.campaign_name,appnext_cost.campaign_name) AS campaign_name,
-        appnext_convs.platform AS platform,
+        COALESCE(appnext_convs.platform, appnext_cost.platform) AS platform,
         promo_type,
         geo,
         campaign_type,
@@ -1487,7 +1491,8 @@ appnext AS (
     FROM appnext_convs
     FULL OUTER JOIN appnext_cost
     ON appnext_cost.date = appnext_convs.date
-       AND appnext_cost.campaign_name = appnext_convs.campaign_name    
+       AND appnext_cost.campaign_name = appnext_convs.campaign_name
+       AND appnext_cost.platform = appnext_convs.platform   
     WHERE 
         (COALESCE(installs,0) + 
         COALESCE(revenue,0) + 

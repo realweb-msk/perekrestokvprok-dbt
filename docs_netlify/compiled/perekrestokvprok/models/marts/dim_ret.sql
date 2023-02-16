@@ -3192,6 +3192,10 @@ appnext_cost AS (
         date,
         campaign_name,
         type,
+        CASE 
+            WHEN REGEXP_CONTAINS(campaign_name,'_p01_') THEN 'android'
+            WHEN REGEXP_CONTAINS(campaign_name,'_p02_') THEN 'ios'
+        END AS platform,
         cost
     FROM `perekrestokvprok-bq`.`dbt_production`.`stg_appnext_cost`
     WHERE
@@ -3223,7 +3227,7 @@ Appnext AS (
     SELECT
         COALESCE(Appnext_convs.date, Appnext_cost.date) AS date,
         COALESCE(Appnext_convs.campaign_name, Appnext_cost.campaign_name) AS campaign_name,
-        Appnext_convs.platform AS platform,
+        COALESCE(Appnext_convs.platform, Appnext_cost.platform) AS platform,
         Appnext_convs.promo_type AS promo_type,
         Appnext_convs.promo_search AS promo_search,
         Appnext_convs.auditory AS auditory,
@@ -3239,6 +3243,7 @@ Appnext AS (
     FULL OUTER JOIN Appnext_cost
     ON  Appnext_convs.date = Appnext_cost.date 
     AND Appnext_convs.campaign_name = Appnext_cost.campaign_name
+    AND appnext_cost.platform = appnext_convs.platform
     --WHERE COALESCE(re_engagement,0) + COALESCE(revenue,0) + COALESCE(purchase,0) + COALESCE(spend,0) > 0
     --AND COALESCE(Appnext_convs.campaign_name, Appnext_cost.campaign_name) != 'None'
 ),
