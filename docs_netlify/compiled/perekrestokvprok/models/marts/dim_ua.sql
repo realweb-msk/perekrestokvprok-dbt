@@ -3798,16 +3798,16 @@ mintegral AS (
 ),
 
 -----------------------------Appnext--------------------------------
-appnext_rate AS (
+appnext_cost AS (
     SELECT
-        start_date,
-        end_date,
-        partner,
-        platform,
-        rate_for_us
-    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_rate_info`
-    WHERE type = 'UA'
-    AND source = 'appnext'
+        date,
+        campaign_name,
+        type,
+        cost
+    FROM `perekrestokvprok-bq`.`dbt_production`.`stg_appnext_cost`
+    WHERE
+        NOT REGEXP_CONTAINS(campaign_name,r'_u2_')
+        AND cost != 0
 ),
 
 appnext_convs_without_cumulation AS (
@@ -3896,8 +3896,8 @@ appnext_convs AS (
 
 appnext AS (
     SELECT
-        date,
-        campaign_name,
+        COALESCE(appnext_convs.date,appnext_cost.date) AS date,
+        COALESCE(appnext_convs.campaign_name,appnext_cost.campaign_name) AS campaign_name,
         appnext_convs.platform AS platform,
         promo_type,
         geo,
@@ -3913,24 +3913,23 @@ appnext AS (
         COALESCE(first_purchase,0) AS first_purchase,
         COALESCE(uniq_first_purchase,0) AS uniq_first_purchase,
         COALESCE(orders,0) AS orders,
-        COALESCE(orders * rate_for_us,0)  AS spend,
+        appnext_cost.cost AS spend,
         'Appnext' AS source,
         'Appnext' AS adv_type
     FROM appnext_convs
-    LEFT JOIN appnext_rate
-    ON appnext_convs.partner = appnext_rate.partner 
-    AND appnext_convs.date BETWEEN appnext_rate.start_date AND appnext_rate.end_date
-    AND appnext_convs.platform = appnext_rate.platform 
+    FULL OUTER JOIN appnext_cost
+    ON appnext_cost.date = appnext_convs.date
+       AND appnext_cost.campaign_name = appnext_convs.campaign_name    
     WHERE 
-        COALESCE(installs,0) + 
+        (COALESCE(installs,0) + 
         COALESCE(revenue,0) + 
         COALESCE(purchase,0) + 
         COALESCE(uniq_purchase,0) +
         COALESCE(first_purchase_revenue,0) +
         COALESCE(first_purchase,0) + 
-        COALESCE(uniq_first_purchase,0) +
-        COALESCE(orders * rate_for_us,0) > 0
-    AND campaign_name != 'None'
+        COALESCE(uniq_first_purchase,0) > 0
+        AND appnext_convs.campaign_name != 'None')
+        OR appnext_cost.cost != 0
 ),
 
 ----------------------Realweb CPA----------------------------
