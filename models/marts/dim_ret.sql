@@ -711,7 +711,7 @@ Appnext_convs AS (
         promo_search,
         auditory,
         SUM(IF(event_name = "af_purchase", event_revenue, 0)) AS revenue,
-        --SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
+        SUM(IF(event_name = "af_purchase", event_count, 0)) AS purchase,
         SUM(IF(event_name = 're-engagement', event_count, 0)) AS re_engagement
     FROM af_conversions
     WHERE  is_retargeting = TRUE
@@ -729,7 +729,7 @@ Appnext AS (
         Appnext_convs.auditory AS auditory,
         COALESCE(re_engagement,0) AS re_engagement,
         COALESCE(revenue,0) AS revenue,
-        null AS purchase,
+        purchase,
         null AS first_purchase,
         null AS first_purchase_revenue,
         appnext_cost.cost AS spend,

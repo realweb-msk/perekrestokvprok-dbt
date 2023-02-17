@@ -80,6 +80,12 @@ sources:
       - name: appnext_cost
         description: Расходы для кампаний appnext from https://docs.google.com/spreadsheets/d/1kZoorxv0pZnwpTvRI8M8J5C6kR3pbQMhTF-h8jds2KI/edit#gid=1968718394
 
+      - name: crm_redeem_first_orders_2023
+        description: Выкупленные заказы за 2023 (кроме января) from https://docs.google.com/spreadsheets/d/1SoM6PRjrGG9h9SJA_VSMR6EagS0unZLsOey5XAJtDaA/edit#gid=936391085
+
+      - name: crm_redeem_first_orders_realwebcpa_2023
+        description: Выкупленные заказы realwebcpa за 2023 (кроме января) from https://docs.google.com/spreadsheets/d/159JmxKc_3asbrswjvqQy_rCDowsmF3_iHhDePZbIy50/edit#gid=936391085
+
   - name: MetaCustom
     database: perekrestokvprok-bq
     tables:
